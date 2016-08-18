@@ -4,21 +4,21 @@ import util = require("util");
 import fs = require("fs");
 
 class Arco {
-    public peso: Number;
+    public peso: number;
     public destino: Vertice;
 
-    public constructor(destino: Vertice, peso: Number) {
+    public constructor(destino: Vertice, peso: number) {
         this.peso = peso;
         this.destino = destino;
     }
 }
 
 class Vertice {
-    public idVertice: Number;
-    public nome: String;
+    public idVertice: number;
+    public nome: string;
     public arcos: Arco[];
 
-    public constructor(idVertice: Number, nome: String) {
+    public constructor(idVertice: number, nome: String) {
         this.idVertice = idVertice;
         this.nome = nome.toString();
         this.arcos = new Array();
@@ -38,9 +38,9 @@ class Grafo {
         this.dirigido = false;
     }
 
-    public getPorId(id: Number): Vertice {
+    public getPorId(id: number): Vertice {
         return this.vertices.find(function(value, index, obj) {
-            if(value.idVertice === id) {
+            if (value.idVertice === id) {
                 return true;
             }
             return false;
@@ -59,7 +59,7 @@ class Grafo {
             // Grava as propriedades do grafo
             grafo.ponderado = dados.Grafo.$.ponderado;
             grafo.dirigido = dados.Grafo.$.dirigido;
-            if(!grafo.dirigido) {
+            if (!grafo.dirigido) {
                 console.error("Grafo não dirigido não suportado nesse trabalho!");
                 return null;
             }
@@ -79,6 +79,10 @@ class Grafo {
                 grafo.getPorId(origem).arcos.push(arco);
                 grafo.arcos.push(arco);
             });
+            // Ordena os vértices alfabeticamente
+            grafo.vertices.sort(function(a, b) {
+                return a.nome.localeCompare(b.nome);
+            });
             ok = true;
         });
         while (!ok) {
@@ -91,7 +95,7 @@ class Grafo {
 electron.app.on("ready", function() {
     console.log("Importando XML...");
     let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
-    if(arquivo != null) {
+    if (arquivo != null) {
         let grafo = Grafo.ImportaGrafo(arquivo[0]);
         console.log(grafo);
     }
