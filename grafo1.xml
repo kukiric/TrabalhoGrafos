@@ -1,107 +1,17 @@
-<elementosGrafo.Grafo>
-  <counterId>4</counterId>
-  <listaVertices>
-    <elementosGrafo.Vertice>
-      <id>0</id>
-      <rotulo>A</rotulo>
-      <posicao>
-        <x>195</x>
-        <y>216</y>
-      </posicao>
-      <tamanho>35</tamanho>
-      <arestas>
-        <elementosGrafo.Aresta>
-          <x1>195.0</x1>
-          <y1>216.0</y1>
-          <x2>523.0</x2>
-          <y2>132.0</y2>
-          <verticeOrigem reference="../../.."/>
-          <verticeDestino>
-            <id>1</id>
-            <rotulo>B</rotulo>
-            <posicao>
-              <x>523</x>
-              <y>132</y>
-            </posicao>
-            <tamanho>35</tamanho>
-            <arestas>
-              <elementosGrafo.Aresta>
-                <x1>523.0</x1>
-                <y1>132.0</y1>
-                <x2>414.0</x2>
-                <y2>275.0</y2>
-                <verticeOrigem reference="../../.."/>
-                <verticeDestino>
-                  <id>2</id>
-                  <rotulo>C</rotulo>
-                  <posicao>
-                    <x>414</x>
-                    <y>275</y>
-                  </posicao>
-                  <tamanho>35</tamanho>
-                  <arestas>
-                    <elementosGrafo.Aresta>
-                      <x1>414.0</x1>
-                      <y1>275.0</y1>
-                      <x2>195.0</x2>
-                      <y2>216.0</y2>
-                      <verticeOrigem reference="../../.."/>
-                      <verticeDestino reference="../../../../../../../../.."/>
-                      <peso>1.0</peso>
-                      <dirigida>true</dirigida>
-                    </elementosGrafo.Aresta>
-                  </arestas>
-                  <zIndex>0.0</zIndex>
-                </verticeDestino>
-                <peso>1.0</peso>
-                <dirigida>true</dirigida>
-              </elementosGrafo.Aresta>
-              <elementosGrafo.Aresta>
-                <x1>523.0</x1>
-                <y1>132.0</y1>
-                <x2>694.0</x2>
-                <y2>329.0</y2>
-                <verticeOrigem reference="../../.."/>
-                <verticeDestino>
-                  <id>3</id>
-                  <rotulo>D</rotulo>
-                  <posicao>
-                    <x>694</x>
-                    <y>329</y>
-                  </posicao>
-                  <tamanho>35</tamanho>
-                  <arestas>
-                    <elementosGrafo.Aresta>
-                      <x1>694.0</x1>
-                      <y1>329.0</y1>
-                      <x2>414.0</x2>
-                      <y2>275.0</y2>
-                      <verticeOrigem reference="../../.."/>
-                      <verticeDestino reference="../../../../../elementosGrafo.Aresta/verticeDestino"/>
-                      <peso>1.0</peso>
-                      <dirigida>true</dirigida>
-                    </elementosGrafo.Aresta>
-                  </arestas>
-                  <zIndex>0.0</zIndex>
-                </verticeDestino>
-                <peso>1.0</peso>
-                <dirigida>true</dirigida>
-              </elementosGrafo.Aresta>
-            </arestas>
-            <zIndex>0.0</zIndex>
-          </verticeDestino>
-          <peso>1.0</peso>
-          <dirigida>true</dirigida>
-        </elementosGrafo.Aresta>
-      </arestas>
-      <zIndex>0.0</zIndex>
-    </elementosGrafo.Vertice>
-    <elementosGrafo.Vertice reference="../elementosGrafo.Vertice/arestas/elementosGrafo.Aresta/verticeDestino"/>
-    <elementosGrafo.Vertice reference="../elementosGrafo.Vertice/arestas/elementosGrafo.Aresta/verticeDestino/arestas/elementosGrafo.Aresta/verticeDestino"/>
-    <elementosGrafo.Vertice reference="../elementosGrafo.Vertice/arestas/elementosGrafo.Aresta/verticeDestino/arestas/elementosGrafo.Aresta[2]/verticeDestino"/>
-  </listaVertices>
-  <ponderado>false</ponderado>
-  <dirigido>true</dirigido>
-  <zMax>1.0</zMax>
-  <fromDesfazer>false</fromDesfazer>
-</elementosGrafo.Grafo>
+<?xml version="1.0" encoding="UTF-8" ?>
+<Grafo ponderado="false" dirigido="true">
+	<Vertices>
+		<!-- relId indica o índice do vértice na matriz de adjacências-->
+		<Vertice relId="0" rotulo="A" posX="195" posY="216"/>
+		<Vertice relId="1" rotulo="B" posX="523" posY="132"/>
+		<Vertice relId="2" rotulo="C" posX="414" posY="275"/>
+		<Vertice relId="3" rotulo="D" posX="694" posY="329"/>
+	</Vertices>
+	<Arestas>
+		<Aresta idVertice1="0" idVertice2="1" peso="1.0"/>
+		<Aresta idVertice1="1" idVertice2="3" peso="1.0"/>
+		<Aresta idVertice1="1" idVertice2="2" peso="1.0"/>
+		<Aresta idVertice1="2" idVertice2="0" peso="1.0"/>
+		<Aresta idVertice1="3" idVertice2="2" peso="1.0"/>
+	</Arestas>
+</Grafo>

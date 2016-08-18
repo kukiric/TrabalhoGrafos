@@ -28,8 +28,7 @@ class Grafo {
         this.arcos = new Array();
     }
 
-    // Deprecado: estrutura na exportação em "scripts" é mais simples e usável
-    public static ImportaGrafoComplexo(caminho: string): Grafo {
+    public static ImportaGrafo(caminho: string): Grafo {
         let arquivo = fs.readFileSync(caminho);
         let grafo: Grafo = null;
         let ok: boolean = false;
@@ -37,22 +36,6 @@ class Grafo {
             if (err != null) {
                 console.error("Erro na leitura do XML: " + err);
             }
-            grafo = new Grafo();
-            let grafoXml = dados["elementosGrafo.Grafo"];
-            // Opções do grafo
-            console.log("Dirigido: " + <boolean> grafoXml.dirigido);
-            console.log("Ponderado: " + <boolean> grafoXml.ponderado);
-            // Imprime a estrutura
-            // console.log(JSON.stringify(grafoXml, null, "."));
-            // Grava os vértices
-            grafoXml.listaVertices[0]["elementosGrafo.Vertice"].forEach(vertice => {
-                if (vertice["$"] != null) {
-                    console.log("Vértice linkado ignorado");
-                }
-                else {
-                    grafo.nos.push(new No(vertice.id, vertice.rotulo));
-                }
-            });
             ok = true;
         });
         while (!ok) {
@@ -63,5 +46,5 @@ class Grafo {
 }
 
 console.log("Importando XML...");
-let grafo = Grafo.ImportaGrafoComplexo("grafo1.xml");
+let grafo = Grafo.ImportaGrafo("grafo1.xml");
 console.log(JSON.stringify(grafo, null, "."));
