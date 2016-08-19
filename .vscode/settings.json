@@ -8,6 +8,8 @@
         "**/*.js": {
             "when": "$(basename).ts"
         },
-        "**/*.js.map": true
+        "**/*.map": true,
+        "**/.BROWSE.VC.DB": true,
+        "node_modules/": true
     }
 }

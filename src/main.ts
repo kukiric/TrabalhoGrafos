@@ -23,6 +23,14 @@ class Vertice {
         this.nome = nome.toString();
         this.arcos = new Array();
     }
+
+    public get adjacentes(): Vertice[] {
+        return this.arcos.map(adj => adj.destino);
+    }
+
+    public equals(v2: Vertice) {
+        return this.id === v2.id;
+    }
 }
 
 class Grafo {
@@ -50,24 +58,31 @@ class Grafo {
         });
     }
 
-    public buscaDFS(inicio: string): Vertice[] {
+    public static DFS(inicial: Vertice, visitados?: Vertice[]): Vertice[] {
+        if (visitados === undefined) {
+            visitados = new Array<Vertice>();
+            visitados.push(inicial);
+        }
         let resultado = new Array<Vertice>();
-        this.vertices.forEach(function(vertice) {
-            resultado.push(vertice);
+        // Visita cada adjacente ainda não visitado
+        inicial.adjacentes.forEach(adjacente => {
+            if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
+                visitados.push(adjacente);
+                console.log("Novo adjacente de " + inicial.nome + ": " + adjacente.nome);
+                this.DFS(adjacente, visitados);
+            }
         });
         return resultado;
     }
 
-    public buscaBFS(inicio: string): Vertice[] {
-        let resultado = new Array<Vertice>();
-        return resultado;
-    }
-
     public contemTodos(vertices: Vertice[]): boolean {
+        if (vertices.length === 0) {
+            return false;
+        }
         let conexo = true;
         // Verifica se todos os vértices do grafo estão no parâmetro
-        this.vertices.forEach(function(v1: Vertice) {
-            if (vertices.find(function(v2: Vertice) {return v1.nome === v2.nome;}) == null) {
+        this.vertices.forEach((vertice: Vertice) => {
+            if (this.getVerticePorNome(vertice.nome) == null) {
                 conexo = false;
             }
         });
@@ -77,7 +92,6 @@ class Grafo {
     public static ImportaGrafo(caminho: string): Grafo {
         let arquivo = fs.readFileSync(caminho);
         let grafo: Grafo = null;
-        let ok: boolean = false;
         xml2js.parseString(arquivo.toString(), function(erro, dados) {
             if (erro != null) {
                 console.error(erro);
@@ -112,18 +126,14 @@ class Grafo {
             // Ordena os vértices alfabeticamente
             grafo.vertices.sort(function(a, b) {
                 // Retorna o mais curto primeiro
-                let dif = (a.nome.length - b.nome.length);
+                let diff = (a.nome.length - b.nome.length);
                 // Se o tamanho for igual, realiza comparação léxica
-                if (dif === 0) {
+                if (diff === 0) {
                     return a.nome.localeCompare(b.nome);
                 }
-                return dif;
+                return diff;
             });
-            ok = true;
         });
-        while (!ok) {
-            console.log("Esperando leitura do grafo terminar...");
-        }
         return grafo;
     }
 }
@@ -140,14 +150,8 @@ electron.app.on("ready", function() {
             // Busca de profundidade
             console.log("");
             console.log("DFS a partir de A: ");
-            vertices = grafo.buscaDFS("A");
+            vertices = Grafo.DFS(grafo.getVerticePorNome("A"));
             console.log(util.inspect(vertices, false, 1, true));
-            console.log("Conexo: " + grafo.contemTodos(vertices));
-            // Busca de amplitude
-            console.log("");
-            console.log("BFS a partir de A: ");
-            vertices = grafo.buscaBFS("A");
-            console.log("Vértices encontrados: " + util.inspect(vertices, false, 1, true));
             console.log("Conexo: " + grafo.contemTodos(vertices));
         }
     }
