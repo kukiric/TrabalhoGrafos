@@ -85,7 +85,13 @@ class Grafo {
             });
             // Ordena os vértices alfabeticamente
             grafo.vertices.sort(function(a, b) {
-                return a.nome.localeCompare(b.nome);
+                // Retorna o mais curto primeiro
+                let dif = (a.nome.length - b.nome.length);
+                // Se o tamanho for igual, realiza comparação léxica
+                if (dif === 0) {
+                    return a.nome.localeCompare(b.nome);
+                }
+                return dif;
             });
             ok = true;
         });
