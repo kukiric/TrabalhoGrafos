@@ -1,0 +1,12 @@
+Trabalho realizado por Marcelo Leonaro de Souza e Ricardo Maes Zaguini Nunes
+
+1. Baixe e instale o Node.js do site https://nodejs.org/ (versão 4 ou superior recomendada)
+2. Abra uma janela de prompt de comando do Node.js (não o Node.js em si!)
+3. Navegue até o diretório onde o projeto foi extraído
+4. Instale as dependências do projeto com os comandos:
+    npm install --global typescript
+    npm install
+5. Execute o projeto com o comando:
+    npm start
+
+Nota: os códigos fontes originais (na pasta src/) têm a extensão .ts, enquanto que os gerados pelo compilador do typescript têm a extensão .js (executável pelo Node)
