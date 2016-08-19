@@ -25,11 +25,25 @@ class Vertice {
     }
 
     public get adjacentes(): Vertice[] {
-        return this.arcos.map(adj => adj.destino);
+        return this.arcos.map(adj => adj.destino).sort((a, b) => a.compare(b));
     }
 
+    // Compara igualdade
     public equals(v2: Vertice) {
         return this.id === v2.id;
+    }
+
+    // Compara precedência
+    public compare(v2: Vertice) {
+        // Retorna o nome mais curto primeiro
+        let diff = (this.nome.length - v2.nome.length);
+        if (diff !== 0) {
+            return diff;
+        }
+        // Se os nomes tiverem tamanho igual, realiza comparação alfabética
+        else {
+            return this.nome.localeCompare(v2.nome);
+        }
     }
 }
 
@@ -65,28 +79,18 @@ class Grafo {
         }
         let resultado = new Array<Vertice>();
         // Visita cada adjacente ainda não visitado
-        inicial.adjacentes.forEach(adjacente => {
+        inicial.adjacentes.sort((a, b) => a.compare(b)).forEach(adjacente => {
             if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
                 visitados.push(adjacente);
-                console.log("Novo adjacente de " + inicial.nome + ": " + adjacente.nome);
                 this.DFS(adjacente, visitados);
             }
         });
-        return resultado;
+        return visitados;
     }
 
-    public contemTodos(vertices: Vertice[]): boolean {
-        if (vertices.length === 0) {
-            return false;
-        }
-        let conexo = true;
-        // Verifica se todos os vértices do grafo estão no parâmetro
-        this.vertices.forEach((vertice: Vertice) => {
-            if (this.getVerticePorNome(vertice.nome) == null) {
-                conexo = false;
-            }
-        });
-        return conexo;
+    public contemTodos(subConjunto: Vertice[]): boolean {
+        // Verifica se todos os vértices do grafo estão no sub-conjunto
+        return this.vertices.every(v1 => subConjunto.find(v2 => v2.nome === v1.nome) != null);
     };
 
     public static ImportaGrafo(caminho: string): Grafo {
@@ -123,16 +127,8 @@ class Grafo {
                     grafo.arcos.push(arco2);
                 }
             });
-            // Ordena os vértices alfabeticamente
-            grafo.vertices.sort(function(a, b) {
-                // Retorna o mais curto primeiro
-                let diff = (a.nome.length - b.nome.length);
-                // Se o tamanho for igual, realiza comparação léxica
-                if (diff === 0) {
-                    return a.nome.localeCompare(b.nome);
-                }
-                return diff;
-            });
+            // Ordena os vértices
+            grafo.vertices.sort((a, b) => a.compare(b));
         });
         return grafo;
     }
@@ -148,9 +144,12 @@ electron.app.on("ready", function() {
             let vertices: Vertice[];
             console.log(util.inspect(grafo, false, 4, true));
             // Busca de profundidade
-            console.log("");
-            console.log("DFS a partir de A: ");
+            console.log("\nDFS a partir de A: ");
             vertices = Grafo.DFS(grafo.getVerticePorNome("A"));
+            console.log(util.inspect(vertices, false, 1, true));
+            console.log("Conexo: " + grafo.contemTodos(vertices));
+            console.log("\nDFS a partir de C: ");
+            vertices = Grafo.DFS(grafo.getVerticePorNome("C"));
             console.log(util.inspect(vertices, false, 1, true));
             console.log("Conexo: " + grafo.contemTodos(vertices));
         }
