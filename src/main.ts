@@ -56,28 +56,32 @@ class Grafo {
                 console.error("Erro na leitura do XML: " + err);
             }
             grafo = new Grafo();
+            let grafoXml = dados.Grafo;
             // Grava as propriedades do grafo
-            grafo.ponderado = dados.Grafo.$.ponderado;
-            grafo.dirigido = dados.Grafo.$.dirigido;
-            if (!grafo.dirigido) {
-                console.error("Grafo não dirigido não suportado nesse trabalho!");
-                return null;
-            }
+            grafo.ponderado = (grafoXml.$.ponderado === "true");
+            grafo.dirigido = (grafoXml.$.dirigido === "true");
             // Grava os vértices do grafo
-            dados.Grafo.Vertices[0].Vertice.forEach(function(v) {
+            grafoXml.Vertices[0].Vertice.forEach(function(v) {
                 let idVertice = v.$.relId;
                 let rotulo = v.$.rotulo;
                 let vertice = new Vertice(idVertice, rotulo);
                 grafo.vertices.push(vertice);
             });
             // Grava as arestas do grafo
-            dados.Grafo.Arestas[0].Aresta.forEach(function(a) {
+            grafoXml.Arestas[0].Aresta.forEach(function(a) {
                 let origem = a.$.idVertice1;
                 let destino = a.$.idVertice2;
                 let peso = a.$.peso;
                 let arco = new Arco(grafo.getPorId(destino), peso);
                 grafo.getPorId(origem).arcos.push(arco);
                 grafo.arcos.push(arco);
+                // Cria um arco simétrico se o grafo não for direcionado
+                if (grafo.dirigido === false) {
+                    let arco2 = new Arco(grafo.getPorId(origem), peso);
+                    grafo.getPorId(destino).arcos.push(arco2);
+                    grafo.arcos.push(arco2);
+                    console.log("Simétrico: " + arco2);
+                }
             });
             // Ordena os vértices alfabeticamente
             grafo.vertices.sort(function(a, b) {
@@ -97,7 +101,7 @@ electron.app.on("ready", function() {
     let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
     if (arquivo != null) {
         let grafo = Grafo.ImportaGrafo(arquivo[0]);
-        console.log(grafo);
+        console.log(util.inspect(grafo, false, 4, true));
     }
     electron.app.exit(0);
 });
