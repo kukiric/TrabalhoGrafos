@@ -14,12 +14,12 @@ class Arco {
 }
 
 class Vertice {
-    public idVertice: number;
+    public id: number;
     public nome: string;
     public arcos: Arco[];
 
-    public constructor(idVertice: number, nome: String) {
-        this.idVertice = idVertice;
+    public constructor(id: number, nome: String) {
+        this.id = id;
         this.nome = nome.toString();
         this.arcos = new Array();
     }
@@ -38,22 +38,49 @@ class Grafo {
         this.dirigido = false;
     }
 
-    public getPorId(id: number): Vertice {
-        return this.vertices.find(function(value, index, obj) {
-            if (value.idVertice === id) {
-                return true;
-            }
-            return false;
+    public getVerticePorID(id: number): Vertice {
+        return this.vertices.find(function(vertice) {
+            return vertice.id === id;
         });
     }
+
+    public getVerticePorNome(nome: string) : Vertice {
+        return this.vertices.find(function(vertice) {
+            return vertice.nome === nome;
+        });
+    }
+
+    public buscaDFS(inicio: string): Vertice[] {
+        let resultado = new Array<Vertice>();
+        this.vertices.forEach(function(vertice) {
+            resultado.push(vertice);
+        });
+        return resultado;
+    }
+
+    public buscaBFS(inicio: string): Vertice[] {
+        let resultado = new Array<Vertice>();
+        return resultado;
+    }
+
+    public contemTodos(vertices: Vertice[]): boolean {
+        let conexo = true;
+        // Verifica se todos os vértices do grafo estão no parâmetro
+        this.vertices.forEach(function(v1: Vertice) {
+            if (vertices.find(function(v2: Vertice) {return v1.nome === v2.nome;}) == null) {
+                conexo = false;
+            }
+        });
+        return conexo;
+    };
 
     public static ImportaGrafo(caminho: string): Grafo {
         let arquivo = fs.readFileSync(caminho);
         let grafo: Grafo = null;
         let ok: boolean = false;
-        xml2js.parseString(arquivo.toString(), function(err, dados) {
-            if (err != null) {
-                console.error("Erro na leitura do XML: " + err);
+        xml2js.parseString(arquivo.toString(), function(erro, dados) {
+            if (erro != null) {
+                console.error(erro);
             }
             grafo = new Grafo();
             let grafoXml = dados.Grafo;
@@ -62,25 +89,24 @@ class Grafo {
             grafo.dirigido = (grafoXml.$.dirigido === "true");
             // Grava os vértices do grafo
             grafoXml.Vertices[0].Vertice.forEach(function(v) {
-                let idVertice = v.$.relId;
+                let idVertice = parseInt(v.$.relId);
                 let rotulo = v.$.rotulo;
                 let vertice = new Vertice(idVertice, rotulo);
                 grafo.vertices.push(vertice);
             });
             // Grava as arestas do grafo
             grafoXml.Arestas[0].Aresta.forEach(function(a) {
-                let origem = a.$.idVertice1;
-                let destino = a.$.idVertice2;
-                let peso = a.$.peso;
-                let arco = new Arco(grafo.getPorId(destino), peso);
-                grafo.getPorId(origem).arcos.push(arco);
+                let origem = parseInt(a.$.idVertice1);
+                let destino = parseInt(a.$.idVertice2);
+                let peso = parseFloat(a.$.peso);
+                let arco = new Arco(grafo.getVerticePorID(destino), peso);
+                grafo.getVerticePorID(origem).arcos.push(arco);
                 grafo.arcos.push(arco);
                 // Cria um arco simétrico se o grafo não for direcionado
                 if (grafo.dirigido === false) {
-                    let arco2 = new Arco(grafo.getPorId(origem), peso);
-                    grafo.getPorId(destino).arcos.push(arco2);
+                    let arco2 = new Arco(grafo.getVerticePorID(origem), peso);
+                    grafo.getVerticePorID(destino).arcos.push(arco2);
                     grafo.arcos.push(arco2);
-                    console.log("Simétrico: " + arco2);
                 }
             });
             // Ordena os vértices alfabeticamente
@@ -102,12 +128,32 @@ class Grafo {
     }
 }
 
+// Função principal da aplicação
 electron.app.on("ready", function() {
-    console.log("Importando XML...");
-    let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
-    if (arquivo != null) {
-        let grafo = Grafo.ImportaGrafo(arquivo[0]);
-        console.log(util.inspect(grafo, false, 4, true));
+    try {
+        let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
+        if (arquivo != null) {
+            console.log("Importando XML...");
+            let grafo = Grafo.ImportaGrafo(arquivo[0]);
+            let vertices: Vertice[];
+            console.log(util.inspect(grafo, false, 4, true));
+            // Busca de profundidade
+            console.log("");
+            console.log("DFS a partir de A: ");
+            vertices = grafo.buscaDFS("A");
+            console.log(util.inspect(vertices, false, 1, true));
+            console.log("Conexo: " + grafo.contemTodos(vertices));
+            // Busca de amplitude
+            console.log("");
+            console.log("BFS a partir de A: ");
+            vertices = grafo.buscaBFS("A");
+            console.log("Vértices encontrados: " + util.inspect(vertices, false, 1, true));
+            console.log("Conexo: " + grafo.contemTodos(vertices));
+        }
+    }
+    catch(erro) {
+        console.error(erro);
+        electron.app.exit(1);
     }
     electron.app.exit(0);
 });
