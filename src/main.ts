@@ -24,6 +24,7 @@ class Vertice {
         this.arcos = new Array();
     }
 
+    // Retorna os vértices adjacentes em ordem alfabética
     public get adjacentes(): Vertice[] {
         return this.arcos.map(adj => adj.destino).sort((a, b) => a.compare(b));
     }
@@ -77,13 +78,31 @@ class Grafo {
             visitados = new Array<Vertice>();
             visitados.push(inicial);
         }
-        let resultado = new Array<Vertice>();
-        // Visita cada adjacente ainda não visitado
-        inicial.adjacentes.sort((a, b) => a.compare(b)).forEach(adjacente => {
+        // Entra no primeiro adjacente ainda não visitado recursivamente
+        inicial.adjacentes.forEach(adjacente => {
             if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
                 visitados.push(adjacente);
                 this.DFS(adjacente, visitados);
             }
+        });
+        return visitados;
+    }
+
+    public static BFS(inicial: Vertice, visitados?: Vertice[]): Vertice[] {
+        if (visitados === undefined) {
+            visitados = new Array<Vertice>();
+            visitados.push(inicial);
+        }
+        // Entra em todos os adjacentes não visitados primeiro
+        let novasVisitas = Array<Vertice>();
+        inicial.adjacentes.forEach(adjacente => {
+            if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
+                visitados.push(adjacente);
+                novasVisitas.push(adjacente);
+            }
+        });
+        novasVisitas.forEach(adjacente => {
+            this.BFS(adjacente, visitados);
         });
         return visitados;
     }
@@ -139,10 +158,12 @@ electron.app.on("ready", function() {
     try {
         let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
         if (arquivo != null) {
+            // Leitura do XML
             console.log("Importando XML...");
             let grafo = Grafo.ImportaGrafo(arquivo[0]);
             let vertices: Vertice[];
             console.log(util.inspect(grafo, false, 4, true));
+
             // Busca de profundidade
             console.log("\nDFS a partir de A: ");
             vertices = Grafo.DFS(grafo.getVerticePorNome("A"));
@@ -150,6 +171,16 @@ electron.app.on("ready", function() {
             console.log("Conexo: " + grafo.contemTodos(vertices));
             console.log("\nDFS a partir de C: ");
             vertices = Grafo.DFS(grafo.getVerticePorNome("C"));
+            console.log(util.inspect(vertices, false, 1, true));
+            console.log("Conexo: " + grafo.contemTodos(vertices));
+
+            // Busca de amplitude
+            console.log("\nBFS a partir de A: ");
+            vertices = Grafo.BFS(grafo.getVerticePorNome("A"));
+            console.log(util.inspect(vertices, false, 1, true));
+            console.log("Conexo: " + grafo.contemTodos(vertices));
+            console.log("\nBDFS a partir de C: ");
+            vertices = Grafo.BFS(grafo.getVerticePorNome("C"));
             console.log(util.inspect(vertices, false, 1, true));
             console.log("Conexo: " + grafo.contemTodos(vertices));
         }
