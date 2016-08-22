@@ -19,11 +19,13 @@ export class Vertice {
     public id: number;
     public nome: string;
     public arcos: Arco[];
+    public posicao: {x: Number, y: Number};
 
-    public constructor(id: number, nome: String) {
+    public constructor(id: number, nome: String, posicao?: {x: Number, y: Number}) {
         this.id = id;
         this.nome = nome.toString();
         this.arcos = new Array();
+        this.posicao = posicao || {x: 0, y: 0};
     }
 
     // Retorna os vértices adjacentes em ordem alfabética
@@ -152,7 +154,8 @@ export function importarXML(caminho: string): Grafo {
         grafoXml.Vertices[0].Vertice.forEach(function(v) {
             let idVertice = parseInt(v.$.relId);
             let rotulo = v.$.rotulo;
-            let vertice = new Vertice(idVertice, rotulo);
+            let posicao = {x: parseInt(v.$.posX), y: parseInt(v.$.posY)};
+            let vertice = new Vertice(idVertice, rotulo, posicao);
             grafo.vertices.push(vertice);
         });
         // Grava as arestas do grafo
