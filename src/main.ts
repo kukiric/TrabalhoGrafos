@@ -179,7 +179,7 @@ electron.app.on("ready", function() {
             vertices = Grafo.BFS(grafo.getVerticePorNome("A"));
             console.log(util.inspect(vertices, false, 1, true));
             console.log("Conexo: " + grafo.contemTodos(vertices));
-            console.log("\nBDFS a partir de C: ");
+            console.log("\nBFS a partir de C: ");
             vertices = Grafo.BFS(grafo.getVerticePorNome("C"));
             console.log(util.inspect(vertices, false, 1, true));
             console.log("Conexo: " + grafo.contemTodos(vertices));
