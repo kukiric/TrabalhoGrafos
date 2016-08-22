@@ -18,21 +18,20 @@ electron.app.on("ready", function() {
             console.log("\nDFS a partir de A: ");
             vertices = grafos.buscaDFS(grafo.getVerticePorNome("A"));
             console.log(util.inspect(vertices, false, 1, true));
-            console.log("Conexo: " + grafo.contemTodos(vertices));
             console.log("\nDFS a partir de C: ");
             vertices = grafos.buscaDFS(grafo.getVerticePorNome("C"));
             console.log(util.inspect(vertices, false, 1, true));
-            console.log("Conexo: " + grafo.contemTodos(vertices));
 
             // Busca de amplitude
             console.log("\nBFS a partir de A: ");
             vertices = grafos.buscaBFS(grafo.getVerticePorNome("A"));
             console.log(util.inspect(vertices, false, 1, true));
-            console.log("Conexo: " + grafo.contemTodos(vertices));
             console.log("\nBFS a partir de C: ");
             vertices = grafos.buscaBFS(grafo.getVerticePorNome("C"));
             console.log(util.inspect(vertices, false, 1, true));
-            console.log("Conexo: " + grafo.contemTodos(vertices));
+
+            // Testa se o grafo é conexo
+            console.log("\nGrafo conexo: " + grafo.isConexo());
         }
     }
     catch (erro) {

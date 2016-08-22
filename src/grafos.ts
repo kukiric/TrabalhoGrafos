@@ -77,8 +77,21 @@ export class Grafo {
 
     public contemTodos(subConjunto: Vertice[]): boolean {
         // Verifica se todos os vértices do grafo estão no sub-conjunto
-        return this.vertices.every(v1 => subConjunto.find(v2 => v2.nome === v1.nome) != null);
+        return this.vertices.every(v1 => subConjunto.find(v2 => v1.equals(v2)) != null);
     };
+
+    public isConexo(): boolean {
+        // Verifica se todos os vértices conseguem navegar por todo o grafo
+        let visitados = new Array<Vertice>();
+        return this.vertices.every((inicial: Vertice) => {
+            // Pula o teste se o vértice inicial a ser testado já foi visitado
+            if (visitados.find((v2: Vertice) => inicial.equals(v2))) {
+                return true;
+            }
+            // Se não, testa se ele é conexo desse vértice
+            return this.contemTodos(buscaDFS(inicial, visitados));
+        });
+    }
 }
 
 /////////////////////////
