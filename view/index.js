@@ -18,25 +18,35 @@ function devTools() {
 
 function desenhaGrafo() {
     canvas.clearRect(0, 0, 1024, 768);
-    function circulo(x, y) {
+    function drawVertice(pos, nome) {
         canvas.beginPath();
         canvas.lineWidth = 4;
-        canvas.arc(x, y, 16, 0, 2*Math.PI);
+        canvas.arc(pos.x, pos.y, 16, 0, 2*Math.PI);
         canvas.stroke();
         canvas.fillStyle = "yellow";
-        canvas.arc(x, y, 16, 0, 2*Math.PI);
+        canvas.arc(pos.x, pos.y, 16, 0, 2*Math.PI);
         canvas.fill();
-    }
-    function texto(x, y, texto) {
         canvas.fillStyle = "black";
         canvas.textAlign = "center";
         canvas.font = "12px sans-serif";
-        canvas.fillText(texto, x, y + 4);
+        canvas.fillText(nome, pos.x, pos.y + 4);
     }
+    function drawArco(pos1, pos2) {
+        canvas.beginPath();
+        canvas.lineWidth = 2;
+        canvas.moveTo(pos1.x, pos1.y);
+        canvas.lineTo(pos2.x, pos2.y);
+        canvas.stroke();
+    }
+    // Desenha os arcos primeiro
     grafo.vertices.forEach((vertice) => {
-        var x = vertice.posicao.x;
-        var y = vertice.posicao.y;
-        circulo(x, y);
-        texto(x, y, vertice.nome);
+        vertice.adjacentes.forEach((outro) => {
+            drawArco(vertice.posicao, outro.posicao);
+        });
     });
+    // E depois os vértices por cima
+    grafo.vertices.forEach((vertice) => {
+        drawVertice(vertice.posicao, vertice.nome);
+    });
+    // TODO desnhar as setas dos arcos
 }
