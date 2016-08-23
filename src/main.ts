@@ -8,6 +8,7 @@ electron.app.on("ready", () => {
     // Abre a janela
     janela = new electron.BrowserWindow();
     janela.setMenu(null);
+    janela.maximize();
     janela.loadURL("file://" + __dirname + "/../view/index.html");
 
     // Adiciona os eventos
@@ -17,15 +18,26 @@ electron.app.on("ready", () => {
             contents.closeDevTools();
         }
         else {
-            contents.openDevTools({mode: "undocked"});
+            contents.openDevTools({mode: "right"});
         }
     })
+    // Abre um arquivo e retorna o caminho
+    .on("abrir", (event) => {
+        let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
+        if(arquivo != null) {
+            event.returnValue = arquivo[0];
+        }
+        else {
+            event.returnValue = null;
+        }
+    })
+    // Abre o grafo e testa a estrutura
     .on("abrir-grafo", () => {
         try {
             let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
             if (arquivo != null) {
                 // Leitura do XML
-                console.log("Importando XML...");
+                console.log("Importando XML de " + arquivo);
                 let grafo = grafos.importarXML(arquivo[0]);
                 let vertices: grafos.Vertice[];
                 console.log(util.inspect(grafo, false, 4, true));

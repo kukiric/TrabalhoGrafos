@@ -2,7 +2,7 @@ body {
     margin: 0;
 }
 
-canvas {
+canvas#grafo {
     width: 100%;
     height: calc(100% - 80px);
     background-color: white;
