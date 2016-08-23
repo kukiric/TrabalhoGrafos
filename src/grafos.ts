@@ -71,7 +71,7 @@ export class Grafo {
         });
     }
 
-    public getVerticePorNome(nome: string) : Vertice {
+    public getVerticePorNome(nome: string): Vertice {
         return this.vertices.find(function(vertice) {
             return vertice.nome === nome;
         });

@@ -24,7 +24,7 @@ electron.app.on("ready", () => {
     // Abre um arquivo e retorna o caminho
     .on("abrir", (event) => {
         let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
-        if(arquivo != null) {
+        if (arquivo != null) {
             event.returnValue = arquivo[0];
         }
         else {
