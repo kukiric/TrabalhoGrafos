@@ -1,0 +1,11 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "script"
+    },
+    "rules": {
+        "semi": "warn",
+        "space-before-blocks": "warn",
+        "no-mixed-spaces-and-tabs": "warn"
+    }
+}
