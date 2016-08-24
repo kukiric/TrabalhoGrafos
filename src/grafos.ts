@@ -226,7 +226,6 @@ export function importarXML(caminho: string): Grafo {
 
 export function importarMatriz(dados: MatrizGrafo): Grafo {
     let grafo = new Grafo();
-    console.log(JSON.stringify(dados, null, "."));
     // Re-cria os vértices do grafo
     dados.vertices.forEach((vertice) =>  {
         grafo.vertices.push(new Vertice(vertice.id, vertice.nome, {x: vertice.x, y: vertice.y}));
