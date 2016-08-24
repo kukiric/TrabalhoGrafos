@@ -9,7 +9,7 @@
             "stopOnEntry": false,
             "args": [],
             "cwd": "${workspaceRoot}",
-            "preLaunchTask": null,
+            "preLaunchTask": "tsc",
             "runtimeExecutable": "${workspaceRoot}/node_modules/electron-prebuilt/dist/electron",
             "runtimeArgs": [
                 "--nolazy"
@@ -19,7 +19,10 @@
             },
             "externalConsole": false,
             "sourceMaps": true,
-            "outDir": null
+            "outDir": null,
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/node_modules/electron-prebuilt/dist/electron.exe"
+            }
         },
         {
             "name": "Attach",
