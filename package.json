@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "tsc -p tsconfig.json && electron src/main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsc -p tsconfig.json && node tests/teste_importacao.js"
   },
   "author": "",
   "license": "MIT",
