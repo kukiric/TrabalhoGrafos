@@ -2,21 +2,21 @@ const electron = require("electron");
 const grafos = require("../src/grafos");
 
 const canvas = document.getElementById("grafo").getContext("2d");
-var grafo;
 
 function abrirGrafo() {
-    let arquivo = electron.ipcRenderer.sendSync("abrir");
-    if (arquivo != null) {
-        grafo = grafos.importarXML(arquivo);
-    }
-    desenhaGrafo();
+    electron.ipcRenderer.once("set-grafo", (evento, matrizGrafo) => {
+        if (matrizGrafo != null) {
+            desenhaGrafo(grafos.importarMatriz(matrizGrafo));
+        }
+    });
+    electron.ipcRenderer.send("abrir-grafo", "set-grafo");
 }
 
 function devTools() {
     electron.ipcRenderer.send('dev-tools');
 }
 
-function desenhaGrafo() {
+function desenhaGrafo(grafo) {
     canvas.clearRect(0, 0, 1024, 768);
     function drawVertice(pos, nome) {
         canvas.beginPath();

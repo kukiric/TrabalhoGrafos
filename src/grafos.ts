@@ -19,9 +19,9 @@ export class Vertice {
     public id: number;
     public nome: string;
     public arcos: Arco[];
-    public posicao: {x: Number, y: Number};
+    public posicao: {x: number, y: number};
 
-    public constructor(id: number, nome: String, posicao?: {x: Number, y: Number}) {
+    public constructor(id: number, nome: String, posicao?: {x: number, y: number}) {
         this.id = id;
         this.nome = nome.toString();
         this.arcos = new Array();
@@ -50,6 +50,25 @@ export class Vertice {
             return this.nome.localeCompare(v2.nome);
         }
     }
+}
+
+export class VerticeMatrizGrafo {
+    nome: string;
+    id: number;
+    x: number;
+    y: number;
+
+    constructor(nome: string, id: number, x: number, y: number) {
+        this.nome = nome;
+        this.id = id;
+        this.x = x;
+        this.y = y;
+    }
+}
+
+export class MatrizGrafo {
+    vertices: VerticeMatrizGrafo[];
+    matriz: number[][];
 }
 
 export class Grafo {
@@ -93,6 +112,32 @@ export class Grafo {
             // Se não, testa se ele é conexo desse vértice
             return this.contemTodos(buscaDFS(inicial, visitados));
         });
+    }
+
+    public exportarMatriz(): MatrizGrafo {
+        // Copia os meta-dados dos vértices
+        let vertices = this.vertices.map((vert) => {
+            return new VerticeMatrizGrafo(vert.nome, vert.id, vert.posicao.x, vert.posicao.y)
+        });
+        // Gera a matriz vazia
+        let matriz = new Array<number[]>(this.vertices.length);
+        // Calcula os valores da matriz
+        this.vertices.forEach((v1, i) => {
+            matriz[i] = new Array<number>(this.vertices.length);
+            this.vertices.forEach((v2, j) => {
+                // Marca a célula como tendo custo infinito por padrão
+                matriz[i][j] = -1.0;
+                // Insere o custo na matriz de adjacência se houver ligação entre os dois vértices
+                v1.arcos.every(arco => {
+                    if (arco.destino.equals(v2)) {
+                        matriz[i][j] = arco.peso;
+                        return false; // break
+                    }
+                    return true; // continue
+                });
+            });
+        });
+        return {vertices: vertices, matriz: matriz};
     }
 }
 
@@ -175,6 +220,24 @@ export function importarXML(caminho: string): Grafo {
         });
         // Ordena os vértices
         grafo.vertices.sort((a, b) => a.compare(b));
+    });
+    return grafo;
+}
+
+export function importarMatriz(dados: MatrizGrafo): Grafo {
+    let grafo = new Grafo();
+    console.log(JSON.stringify(dados, null, "."));
+    // Re-cria os vértices do grafo
+    dados.vertices.forEach((vertice) =>  {
+        grafo.vertices.push(new Vertice(vertice.id, vertice.nome, {x: vertice.x, y: vertice.y}));
+    });
+    // Re-cria as arestas com custo finito
+    dados.matriz.forEach((linha, i) => {
+        linha.forEach((peso, j) => {
+            if (peso >= 0.0) {
+                grafo.getVerticePorID(i).arcos.push(new Arco(grafo.getVerticePorID(j), peso));
+            }
+        });
     });
     return grafo;
 }
