@@ -8,6 +8,11 @@
     <div id="botoes">
         <button type="button" onclick="abrirGrafo();">Abrir grafo</button>
         <button type="button" onclick="devTools();">Abrir ferramentas de desenvolvimento</button>
-        <button type="button" onclick="DFS();">Realizar busca DFS a partir de A</button>
+        <hr>
+        Vértice inicial da busca: <input type="text" id="grafo_v1" value="A">
+        <div class="vazio"></div>
+        <button type="button" onclick="fazerDFS();">Realizar busca DFS <i>(depth-first)</i></button>
+        <button type="button" onclick="fazerBFS();">Realizar busca BFS <i>(breadth-first)</i></button>
+        <button type="button" onclick="testeIsConexo();">Testar conectividade</button>
     </div>
 </body>

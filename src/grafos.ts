@@ -212,7 +212,7 @@ export function buscaBFS(inicial: Vertice, visitados?: Vertice[]): Vertice[] {
         }
     });
     novasVisitas.forEach(adjacente => {
-        this.buscaBFS(adjacente, visitados);
+        buscaBFS(adjacente, visitados);
     });
     return visitados;
 }

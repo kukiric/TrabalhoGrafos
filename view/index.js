@@ -25,12 +25,38 @@ function devTools() {
     electron.ipcRenderer.send('dev-tools');
 }
 
-function DFS() {
-    if (grafo != null) {
-        let v1 = grafo.getVerticePorNome("A");
-        let encontrados = grafos.buscaDFS(v1);
+function busca(verticeInicial, algoritmo) {
+    let v1 = grafo.getVerticePorNome(verticeInicial);
+    if (v1 == null) {
+        alert("O vértice " + verticeInicial + " não existe no grafo!");
+    }
+    else {
+        let encontrados = algoritmo(v1);
         let lista = encontrados.map((vertice) => vertice.nome).join(", ");
-        alert("Vértices encontrados a partir de A: [" + lista + "]");
+        alert("Vértices encontrados a partir de " + verticeInicial + ": [" + lista + "]");
+    }
+}
+
+function fazerDFS() {
+    if (grafo != null) {
+        busca(document.getElementById("grafo_v1").value, grafos.buscaDFS);
+    }
+}
+
+function fazerBFS() {
+    if (grafo != null) {
+        busca(document.getElementById("grafo_v1").value, grafos.buscaBFS);
+    }
+}
+
+function testeIsConexo() {
+    if (grafo != null) {
+        if (grafo.isConexo()) {
+            alert("SIM\nO grafo é conexo.");
+        }
+        else {
+            alert("NÃO\nO grafo não é conexo.");
+        }
     }
 }
 
