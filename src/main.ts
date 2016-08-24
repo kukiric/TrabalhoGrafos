@@ -26,7 +26,7 @@ electron.app.on("ready", () => {
         let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
         if (arquivo != null) {
             let grafo = grafos.importarXML(arquivo[0]);
-            evento.sender.send(retorno, grafo.exportarMatriz());
+            evento.sender.send(retorno, new grafos.GrafoAciclico(grafo));
         }
         else {
             evento.sender.send(retorno, null);

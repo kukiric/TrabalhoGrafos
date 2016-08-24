@@ -1,9 +1,9 @@
 import xml2js = require("xml2js");
 import fs = require("fs");
 
-////////////////
-// Estruturas //
-////////////////
+///////////////////////////
+// Estruturas de cálculo //
+///////////////////////////
 
 export class Arco {
     public peso: number;
@@ -52,25 +52,6 @@ export class Vertice {
     }
 }
 
-export class VerticeMatrizGrafo {
-    nome: string;
-    id: number;
-    x: number;
-    y: number;
-
-    constructor(nome: string, id: number, x: number, y: number) {
-        this.nome = nome;
-        this.id = id;
-        this.x = x;
-        this.y = y;
-    }
-}
-
-export class MatrizGrafo {
-    vertices: VerticeMatrizGrafo[];
-    matriz: number[][];
-}
-
 export class Grafo {
     public vertices: Vertice[];
     public arcos: Arco[];
@@ -114,16 +95,13 @@ export class Grafo {
         });
     }
 
-    public exportarMatriz(): MatrizGrafo {
-        // Copia os meta-dados dos vértices
-        let vertices = this.vertices.map((vert) => {
-            return new VerticeMatrizGrafo(vert.nome, vert.id, vert.posicao.x, vert.posicao.y)
-        });
+    public getMatrizAdjacencia(): number[][] {
         // Gera a matriz vazia
-        let matriz = new Array<number[]>(this.vertices.length);
+        const tamanho = this.vertices.length;
+        let matriz = new Array<number[]>(tamanho);
         // Calcula os valores da matriz
         this.vertices.forEach((v1, i) => {
-            matriz[i] = new Array<number>(this.vertices.length);
+            matriz[i] = new Array<number>(tamanho);
             this.vertices.forEach((v2, j) => {
                 // Marca a célula como tendo custo infinito por padrão
                 matriz[i][j] = -1.0;
@@ -137,7 +115,67 @@ export class Grafo {
                 });
             });
         });
-        return {vertices: vertices, matriz: matriz};
+        return matriz;
+    }
+}
+
+/////////////////////////////////
+// Estruturas de armazenamento //
+/////////////////////////////////
+
+export class ArcoAciclico {
+    idDestino: number;
+    peso: number;
+
+    constructor(arco: Arco) {
+        this.idDestino = arco.destino.id;
+        this.peso = arco.peso;
+    }
+}
+
+export class VerticeAciclico {
+    nome: string;
+    id: number;
+    x: number;
+    y: number;
+    arcos: ArcoAciclico[];
+
+    constructor(vertice: Vertice) {
+        this.nome = vertice.nome;
+        this.id = vertice.id;
+        this.x = vertice.posicao.x;
+        this.y = vertice.posicao.y;
+        this.arcos = vertice.arcos.map(arco => {
+            return new ArcoAciclico(arco);
+        });
+    }
+}
+
+export class GrafoAciclico {
+    public vertices: VerticeAciclico[];
+
+    constructor(grafo: Grafo) {
+        this.vertices = grafo.vertices.map(vertice => new VerticeAciclico(vertice));
+    }
+
+    public toGrafo(): Grafo {
+        let grafo = new Grafo();
+        // Primeiro re-cria os vértices
+        this.vertices.forEach(vertice => {
+            let verticeReal = new Vertice(vertice.id, vertice.nome, {x: vertice.x, y: vertice.y});
+            grafo.vertices.push(verticeReal);
+        });
+        // Depois os arcos
+        this.vertices.forEach(vertice => {
+            vertice.arcos.forEach(arco => {
+                let v1 = grafo.getVerticePorID(vertice.id);
+                let v2 = grafo.getVerticePorID(arco.idDestino);
+                let arcoReal = new Arco(v2, arco.peso);
+                grafo.arcos.push(arcoReal);
+                v1.arcos.push(arcoReal);
+            });
+        })
+        return grafo;
     }
 }
 
@@ -220,23 +258,6 @@ export function importarXML(caminho: string): Grafo {
         });
         // Ordena os vértices
         grafo.vertices.sort((a, b) => a.compare(b));
-    });
-    return grafo;
-}
-
-export function importarMatriz(dados: MatrizGrafo): Grafo {
-    let grafo = new Grafo();
-    // Re-cria os vértices do grafo
-    dados.vertices.forEach((vertice) =>  {
-        grafo.vertices.push(new Vertice(vertice.id, vertice.nome, {x: vertice.x, y: vertice.y}));
-    });
-    // Re-cria as arestas com custo finito
-    dados.matriz.forEach((linha, i) => {
-        linha.forEach((peso, j) => {
-            if (peso >= 0.0) {
-                grafo.getVerticePorID(i).arcos.push(new Arco(grafo.getVerticePorID(j), peso));
-            }
-        });
     });
     return grafo;
 }

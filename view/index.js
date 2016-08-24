@@ -4,9 +4,10 @@ const grafos = require("../src/grafos");
 const canvas = document.getElementById("grafo").getContext("2d");
 
 function abrirGrafo() {
-    electron.ipcRenderer.once("set-grafo", (evento, matrizGrafo) => {
-        if (matrizGrafo != null) {
-            desenhaGrafo(grafos.importarMatriz(matrizGrafo));
+    electron.ipcRenderer.once("set-grafo", (evento, grafoAciclico) => {
+        if (grafoAciclico != null) {
+            grafoAciclico.toGrafo = grafos.GrafoAciclico.prototype.toGrafo;
+            desenhaGrafo(grafoAciclico.toGrafo());
         }
     });
     electron.ipcRenderer.send("abrir-grafo", "set-grafo");
