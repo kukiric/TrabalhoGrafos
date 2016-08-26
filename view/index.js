@@ -104,7 +104,22 @@ function centro(elementos, getx, gety) {
     return {x: (minX + maxX) / 2, y: (minY + maxY) / 2};
 }
 
+// Função adaptada do StackOverflow
+// Usuário: http://stackoverflow.com/users/796329/titus-cieslewski
+// Postagem: http://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag/6333775#6333775
+function canvas_arrow(context, fromx, fromy, tox, toy){
+    const headlen = 10; // length of head in pixels
+    const arrowangle = 6; // 360 degrees divided by this = actual angle
+    const angle = Math.atan2(toy-fromy,tox-fromx);
+    context.moveTo(fromx, fromy);
+    context.lineTo(tox, toy);
+    context.lineTo(tox-headlen*Math.cos(angle-Math.PI/arrowangle),toy-headlen*Math.sin(angle-Math.PI/arrowangle));
+    context.moveTo(tox, toy);
+    context.lineTo(tox-headlen*Math.cos(angle+Math.PI/arrowangle),toy-headlen*Math.sin(angle+Math.PI/arrowangle));
+}
+
 function desenhaGrafo(grafo) {
+    const raio = 16;
     contexto.canvas.width = contexto.canvas.scrollWidth;
     contexto.canvas.height = contexto.canvas.scrollHeight;
     contexto.clearRect(0, 0, contexto.canvas.width, contexto.canvas.height);
@@ -113,7 +128,6 @@ function desenhaGrafo(grafo) {
     let centroGrafo = centro(grafo.vertices, (v) => v.posicao.x, (v) => v.posicao.y);
     // Funções de desenho no canvas
     function drawVertice(vertice) {
-        const raio = 16;
         let x = centroCanvas.x + vertice.posicao.x - centroGrafo.x;
         let y = centroCanvas.y + vertice.posicao.y - centroGrafo.y;
         contexto.beginPath();
@@ -140,11 +154,32 @@ function desenhaGrafo(grafo) {
         let y1 = centroCanvas.y + v1.posicao.y - centroGrafo.y;
         let x2 = centroCanvas.x + v2.posicao.x - centroGrafo.x;
         let y2 = centroCanvas.y + v2.posicao.y - centroGrafo.y;
+        // Move os finais das arestas para uma de quatro posições do círculo
+        if (x1 - raio > x2) {
+            //x1 -= raio;
+            x2 += raio;
+        }
+        else if (x1 + raio < x2) {
+            //x1 += raio;
+            x2 -= raio;
+        }
+        if (y1 - raio > y2) {
+            //y1 -= raio;
+            y2 += raio;
+        }
+        else if (y1 + raio < y2) {
+            //y1 += raio;
+            y2 -= raio;
+        }
+        let angulo = Math.atan2(y2 - y1, x2 - x1);
+        x2 += Math.cos(angulo) * Math.PI / raio;
+        y2 += Math.sin(angulo) * Math.PI / raio;
         contexto.strokeStyle = "black";
         contexto.beginPath();
         contexto.lineWidth = 2;
         contexto.moveTo(x1, y1);
         contexto.lineTo(x2, y2);
+        canvas_arrow(contexto, x1, y1, x2, y2);
         contexto.stroke();
     }
     // Desenha os arcos primeiro
@@ -157,5 +192,4 @@ function desenhaGrafo(grafo) {
     grafo.vertices.forEach(vertice => {
         drawVertice(vertice);
     });
-    // TODO desenhar as setas dos arcos
 }
