@@ -192,6 +192,11 @@ export class ResultadoBusca {
 }
 
 export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): ResultadoBusca {
+    if (inicial === procurado) {
+        visitados = new Array<Vertice>();
+        visitados.push(inicial);
+        return new ResultadoBusca(inicial, procurado, visitados, true);
+    }
     if (visitados === undefined) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
@@ -216,6 +221,11 @@ export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
 }
 
 export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): ResultadoBusca {
+    if (inicial === procurado) {
+        visitados = new Array<Vertice>();
+        visitados.push(inicial);
+        return new ResultadoBusca(inicial, procurado, visitados, true);
+    }
     if (visitados === undefined) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
