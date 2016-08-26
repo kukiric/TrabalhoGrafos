@@ -25,37 +25,48 @@ function devTools() {
     electron.ipcRenderer.send('dev-tools');
 }
 
-function busca(verticeInicial, algoritmo) {
+function busca(verticeInicial, verticeFinal, algoritmo) {
+    verticeInicial = verticeInicial.trim().toUpperCase();
+    verticeFinal = verticeFinal.trim().toUpperCase();
     let v1 = grafo.getVerticePorNome(verticeInicial);
+    let v2 = grafo.getVerticePorNome(verticeFinal);
+    if (v1 == null && v2 == null) {
+        alert("Os vértices " + verticeInicial + " e " + verticeFinal + " não existem no grafo!");
+        return;
+    }
     if (v1 == null) {
         alert("O vértice " + verticeInicial + " não existe no grafo!");
+        return;
     }
-    else {
-        let encontrados = algoritmo(v1);
-        let lista = encontrados.map((vertice) => vertice.nome).join(", ");
-        alert("Vértices encontrados a partir de " + verticeInicial + ": [" + lista + "]");
+    if (v2 == null) {
+        alert("O vértice " + verticeFinal + " não existe no grafo!");
+        return;
     }
+    console.warn("A busca será realizadas no processo do navegador");
+    let resultado = algoritmo(v1, v2);
+    let lista = resultado.visitados.map((vertice) => vertice.nome).join(", ");
+    alert("Vértices percorridos a partir de " + verticeInicial + ": [" + lista + "]\nVértice " + verticeFinal + " encontrado: " + (resultado.encontrado ? "Sim" : "Não"));
 }
 
 function fazerDFS() {
     if (grafo != null) {
-        busca(document.getElementById("grafo_v1").value, grafos.buscaDFS);
+        busca(document.getElementById("grafo_v1").value, document.getElementById("grafo_v2").value, grafos.buscaDFS);
     }
 }
 
 function fazerBFS() {
     if (grafo != null) {
-        busca(document.getElementById("grafo_v1").value, grafos.buscaBFS);
+        busca(document.getElementById("grafo_v1").value, document.getElementById("grafo_v2").value, grafos.buscaBFS);
     }
 }
 
 function testeIsConexo() {
     if (grafo != null) {
         if (grafo.isConexo()) {
-            alert("SIM\nO grafo é conexo.");
+            alert("Conexo: Sim");
         }
         else {
-            alert("NÃO\nO grafo não é conexo.");
+            alert("Conexo: Não");
         }
     }
 }

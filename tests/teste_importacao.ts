@@ -15,18 +15,18 @@ arquivos.forEach(arquivo => {
 
     // Busca de profundidade
     console.log("\nDFS a partir de A: ");
-    vertices = grafos.buscaDFS(grafo.getVerticePorNome("A"));
+    vertices = grafos.buscaDFS(grafo.getVerticePorNome("A")).visitados;
     console.log(util.inspect(vertices, false, 1, true));
     console.log("\nDFS a partir de C: ");
-    vertices = grafos.buscaDFS(grafo.getVerticePorNome("C"));
+    vertices = grafos.buscaDFS(grafo.getVerticePorNome("C")).visitados;
     console.log(util.inspect(vertices, false, 1, true));
 
     // Busca de amplitude
     console.log("\nBFS a partir de A: ");
-    vertices = grafos.buscaBFS(grafo.getVerticePorNome("A"));
+    vertices = grafos.buscaBFS(grafo.getVerticePorNome("A")).visitados;
     console.log(util.inspect(vertices, false, 1, true));
     console.log("\nBFS a partir de C: ");
-    vertices = grafos.buscaBFS(grafo.getVerticePorNome("C"));
+    vertices = grafos.buscaBFS(grafo.getVerticePorNome("C")).visitados;
     console.log(util.inspect(vertices, false, 1, true));
 
     // Testa se o grafo é conexo

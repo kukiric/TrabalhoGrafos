@@ -10,6 +10,9 @@ electron.app.on("ready", () => {
     janela.setMenu(null);
     janela.maximize();
     janela.loadURL("file://" + __dirname + "/../view/index.html");
+    if (process.env.NODE_ENV === "development") {
+        janela.webContents.openDevTools();
+    }
 
     // Adiciona os eventos
     electron.ipcMain.on("dev-tools", () => {
@@ -18,7 +21,7 @@ electron.app.on("ready", () => {
             contents.closeDevTools();
         }
         else {
-            contents.openDevTools({mode: "right"});
+            contents.openDevTools();
         }
     })
     // Importa um grafo de .xml e envia de volta pelo evento de retorno passado como parâmetro
@@ -33,7 +36,7 @@ electron.app.on("ready", () => {
         }
     });
 })
-// Finaliza a aplicação
 .on("window-all-closed", () => {
+    // Finaliza a aplicação
     electron.app.quit();
 });

@@ -35,7 +35,7 @@ export class Vertice {
 
     // Compara igualdade
     public equals(v2: Vertice) {
-        return this.id === v2.id;
+        return this != null && v2 != null && this.id === v2.id;
     }
 
     // Compara precedência
@@ -83,15 +83,15 @@ export class Grafo {
     };
 
     public isConexo(): boolean {
-        // Verifica se todos os vértices conseguem navegar por todo o grafo
+        // Verifica se todos os vértices têm conexão com todos os outros
         let visitados = new Array<Vertice>();
         return this.vertices.every((inicial: Vertice) => {
-            // Pula o teste se o vértice inicial a ser testado já foi visitado
+            // Pula o teste se esse vértice já foi testado
             if (visitados.find((v2: Vertice) => inicial.equals(v2))) {
                 return true;
             }
-            // Se não, testa se ele é conexo desse vértice
-            return this.contemTodos(buscaDFS(inicial, visitados));
+            // Se não, testa se todos os outros vértices podem ser percorridos a partir deste
+            return this.contemTodos(buscaDFS(inicial, null, visitados).visitados);
         });
     }
 
@@ -183,38 +183,72 @@ export class GrafoAciclico {
 // Algorítmos de busca //
 /////////////////////////
 
-export function buscaDFS(inicial: Vertice, visitados?: Vertice[]): Vertice[] {
-    if (visitados === undefined) {
-        visitados = new Array<Vertice>();
-        visitados.push(inicial);
+export class ResultadoBusca {
+    inicial: Vertice;
+    procurado: Vertice;
+    visitados: Vertice[];
+    encontrado: boolean;
+
+    constructor(inicial: Vertice, procurado: Vertice, visitados: Vertice[], encontrado: boolean) {
+        this.inicial = inicial;
+        this.procurado = procurado;
+        this.visitados = visitados;
+        this.encontrado = encontrado;
     }
-    // Entra no primeiro adjacente ainda não visitado recursivamente
-    inicial.adjacentes.forEach(adjacente => {
-        if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
-            visitados.push(adjacente);
-            buscaDFS(adjacente, visitados);
-        }
-    });
-    return visitados;
 }
 
-export function buscaBFS(inicial: Vertice, visitados?: Vertice[]): Vertice[] {
+export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): ResultadoBusca {
     if (visitados === undefined) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
     }
-    // Entra em todos os adjacentes não visitados primeiro
-    let novasVisitas = Array<Vertice>();
-    inicial.adjacentes.forEach(adjacente => {
+    let encontrado = inicial.adjacentes.some(adjacente => {
+        // Busca todos os adjacentes ainda não visitados
         if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
             visitados.push(adjacente);
+            // Pára no momento que o vértice final for encontrado
+            if (adjacente.equals(procurado)) {
+                return true;
+            }
+            // Se não, continua a busca a partir desse vértice, até o vértice procurado ser encontrado
+            if (buscaDFS(adjacente, procurado, visitados).encontrado) {
+                return true;
+            }
+        }
+        return false;
+    });
+    // Retorna os resultados da busca
+    return new ResultadoBusca(inicial, procurado || null, visitados, encontrado);
+}
+
+export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): ResultadoBusca {
+    if (visitados === undefined) {
+        visitados = new Array<Vertice>();
+        visitados.push(inicial);
+    }
+    let novasVisitas = Array<Vertice>();
+    let encontrado = inicial.adjacentes.some(adjacente => {
+        // Busca todos os adjacentes ainda não visitados e os adiciona na fila
+        if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
+            visitados.push(adjacente);
+            // Pára se o vértice final for encontrado
+            if (adjacente.equals(procurado)) {
+                return true;
+            }
             novasVisitas.push(adjacente);
         }
+        return false;
     });
-    novasVisitas.forEach(adjacente => {
-        buscaBFS(adjacente, visitados);
-    });
-    return visitados;
+    // Depois, percorre a fila até encontrar o vértice adjacente
+    if (!encontrado) {
+        encontrado = novasVisitas.some(adjacente => {
+            if (buscaBFS(adjacente, procurado, visitados).encontrado) {
+                return true;
+            }
+            return false;
+        });
+    }
+    return new ResultadoBusca(inicial, procurado || null, visitados, encontrado);
 }
 
 /////////////////////////
