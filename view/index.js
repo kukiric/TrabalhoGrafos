@@ -71,39 +71,70 @@ function testeIsConexo() {
     }
 }
 
+function centro(elementos, getx, gety) {
+    let minX = getx(elementos[0]), minY = gety(elementos[0]);
+    let maxX = minX, maxY = minY;
+    elementos.slice(1).forEach(elemento => {
+        let x = getx(elemento), y = gety(elemento);
+        if (x < minX) {
+            minX = x;
+        }
+        if (x > maxX) {
+            maxX = x;
+        }
+        if (y < minY) {
+            minY = y;
+        }
+        if (y > maxY) {
+            maxY = y;
+        }
+    });
+    return {x: (minX + maxX) / 2, y: (minY + maxY) / 2};
+}
+
 function desenhaGrafo(grafo) {
     contexto.canvas.width = contexto.canvas.scrollWidth;
     contexto.canvas.height = contexto.canvas.scrollHeight;
     contexto.clearRect(0, 0, contexto.canvas.width, contexto.canvas.height);
+    // Calcula o centro do canvas e do grafo
+    let centroCanvas = {x: contexto.canvas.width / 2, y: contexto.canvas.height / 2};
+    let centroGrafo = centro(grafo.vertices, (v) => v.posicao.x, (v) => v.posicao.y);
+    // Funções de desenho no canvas
     function drawVertice(pos, nome) {
+        let x = centroCanvas.x + pos.x - centroGrafo.x;
+        let y = centroCanvas.y + pos.y - centroGrafo.y;
         contexto.beginPath();
         contexto.lineWidth = 4;
-        contexto.arc(pos.x, pos.y, 16, 0, 2*Math.PI);
+        contexto.arc(x, y, 16, 0, 2*Math.PI);
         contexto.stroke();
         contexto.fillStyle = "yellow";
-        contexto.arc(pos.x, pos.y, 16, 0, 2*Math.PI);
+        contexto.arc(x, y, 16, 0, 2*Math.PI);
         contexto.fill();
         contexto.fillStyle = "black";
         contexto.textAlign = "center";
         contexto.font = "12px sans-serif";
-        contexto.fillText(nome, pos.x, pos.y + 4);
+        contexto.fillText(nome, x, y + 4);
     }
     function drawArco(pos1, pos2) {
+        let x1 = centroCanvas.x + pos1.x - centroGrafo.x;
+        let y1 = centroCanvas.y + pos1.y - centroGrafo.y;
+        let x2 = centroCanvas.x + pos2.x - centroGrafo.x;
+        let y2 = centroCanvas.y + pos2.y - centroGrafo.y;
         contexto.beginPath();
         contexto.lineWidth = 2;
-        contexto.moveTo(pos1.x, pos1.y);
-        contexto.lineTo(pos2.x, pos2.y);
+        contexto.moveTo(x1, y1);
+        contexto.lineTo(x2, y2);
         contexto.stroke();
     }
     // Desenha os arcos primeiro
-    grafo.vertices.forEach((vertice) => {
+    grafo.vertices.forEach(vertice => {
         vertice.adjacentes.forEach((outro) => {
             drawArco(vertice.posicao, outro.posicao);
         });
     });
     // E depois os vértices por cima
-    grafo.vertices.forEach((vertice) => {
+    grafo.vertices.forEach(vertice => {
         drawVertice(vertice.posicao, vertice.nome);
     });
-    // TODO desnhar as setas dos arcos
+    // TODO desenhar as setas dos arcos
 }
