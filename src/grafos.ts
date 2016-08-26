@@ -83,15 +83,9 @@ export class Grafo {
     };
 
     public isConexo(): boolean {
-        // Verifica se todos os vértices têm conexão com todos os outros
-        let visitados = new Array<Vertice>();
+        // Verifica se todos os vértices têm ligação com todos os outros do grafo
         return this.vertices.every((inicial: Vertice) => {
-            // Pula o teste se esse vértice já foi testado
-            if (visitados.find((v2: Vertice) => inicial.equals(v2))) {
-                return true;
-            }
-            // Se não, testa se todos os outros vértices podem ser percorridos a partir deste
-            return this.contemTodos(buscaDFS(inicial, null, visitados).visitados);
+            return this.contemTodos(buscaDFS(inicial, null).visitados);
         });
     }
 
