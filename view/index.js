@@ -2,6 +2,7 @@ const electron = require("electron");
 const grafos = require("../src/grafos");
 
 const contexto = document.getElementById("grafo").getContext("2d");
+let percorridos;
 let grafo;
 
 window.addEventListener("resize", (event) => {
@@ -13,6 +14,7 @@ window.addEventListener("resize", (event) => {
 function abrirGrafo() {
     electron.ipcRenderer.once("set-grafo", (evento, grafoAciclico) => {
         if (grafoAciclico != null) {
+            percorridos = [];
             grafoAciclico.toGrafo = grafos.GrafoAciclico.prototype.toGrafo;
             grafo = grafoAciclico.toGrafo();
             desenhaGrafo(grafo);
@@ -44,8 +46,9 @@ function busca(verticeInicial, verticeFinal, algoritmo) {
     }
     console.warn("A busca será realizadas no processo do navegador");
     let resultado = algoritmo(v1, v2);
-    let lista = resultado.visitados.map((vertice) => vertice.nome).join(", ");
-    alert("Vértices percorridos a partir de " + verticeInicial + ": [" + lista + "]\nVértice " + verticeFinal + " encontrado: " + (resultado.encontrado ? "Sim" : "Não"));
+    percorridos = resultado.visitados.map((vertice) => vertice.nome);    
+    alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (resultado.encontrado ? "Sim" : "Não"));
+    desenhaGrafo(grafo);
 }
 
 function fazerDFS() {
@@ -100,26 +103,35 @@ function desenhaGrafo(grafo) {
     let centroCanvas = {x: contexto.canvas.width / 2, y: contexto.canvas.height / 2};
     let centroGrafo = centro(grafo.vertices, (v) => v.posicao.x, (v) => v.posicao.y);
     // Funções de desenho no canvas
-    function drawVertice(pos, nome) {
-        let x = centroCanvas.x + pos.x - centroGrafo.x;
-        let y = centroCanvas.y + pos.y - centroGrafo.y;
+    function drawVertice(vertice) {
+        const raio = 16;
+        let x = centroCanvas.x + vertice.posicao.x - centroGrafo.x;
+        let y = centroCanvas.y + vertice.posicao.y - centroGrafo.y;
         contexto.beginPath();
         contexto.lineWidth = 4;
-        contexto.arc(x, y, 16, 0, 2*Math.PI);
+        contexto.strokeStyle = "black";
+        contexto.arc(x, y, raio, 0, 2*Math.PI);
         contexto.stroke();
-        contexto.fillStyle = "yellow";
-        contexto.arc(x, y, 16, 0, 2*Math.PI);
+        // Pinta os vértices percorridos
+        if (percorridos.find(nomeVertice => nomeVertice == vertice.nome)) {
+            contexto.fillStyle = "lightblue";
+        }
+        else {
+            contexto.fillStyle = "lightgray";
+        }
+        contexto.arc(x, y, raio, 0, 2*Math.PI);
         contexto.fill();
         contexto.fillStyle = "black";
         contexto.textAlign = "center";
         contexto.font = "12px sans-serif";
-        contexto.fillText(nome, x, y + 4);
+        contexto.fillText(vertice.nome, x, y + 4);
     }
-    function drawArco(pos1, pos2) {
-        let x1 = centroCanvas.x + pos1.x - centroGrafo.x;
-        let y1 = centroCanvas.y + pos1.y - centroGrafo.y;
-        let x2 = centroCanvas.x + pos2.x - centroGrafo.x;
-        let y2 = centroCanvas.y + pos2.y - centroGrafo.y;
+    function drawArco(v1, v2) {
+        let x1 = centroCanvas.x + v1.posicao.x - centroGrafo.x;
+        let y1 = centroCanvas.y + v1.posicao.y - centroGrafo.y;
+        let x2 = centroCanvas.x + v2.posicao.x - centroGrafo.x;
+        let y2 = centroCanvas.y + v2.posicao.y - centroGrafo.y;
+        contexto.strokeStyle = "black";
         contexto.beginPath();
         contexto.lineWidth = 2;
         contexto.moveTo(x1, y1);
@@ -129,12 +141,12 @@ function desenhaGrafo(grafo) {
     // Desenha os arcos primeiro
     grafo.vertices.forEach(vertice => {
         vertice.adjacentes.forEach((outro) => {
-            drawArco(vertice.posicao, outro.posicao);
+            drawArco(vertice, outro);
         });
     });
     // E depois os vértices por cima
     grafo.vertices.forEach(vertice => {
-        drawVertice(vertice.posicao, vertice.nome);
+        drawVertice(vertice);
     });
     // TODO desenhar as setas dos arcos
 }
