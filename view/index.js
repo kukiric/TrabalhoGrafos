@@ -1,15 +1,23 @@
 const electron = require("electron");
 const grafos = require("../src/grafos");
+require("jquery");
 
 const contexto = document.getElementById("grafo").getContext("2d");
 let percorridos;
 let grafo;
 
-window.addEventListener("resize", (event) => {
+window.addEventListener("resize", event => {
     if (grafo != null) {
         desenhaGrafo(grafo);
     }
 });
+
+function atualizarBotoes() {
+    $("#botao_abrir").removeClass("green").addClass("blue");
+    $('#botoes').children("button").each(function() {
+        $(this).prop("disabled", false);
+    });
+}
 
 function abrirGrafo() {
     electron.ipcRenderer.once("set-grafo", (evento, grafoAciclico) => {
@@ -18,6 +26,7 @@ function abrirGrafo() {
             grafoAciclico.toGrafo = grafos.GrafoAciclico.prototype.toGrafo;
             grafo = grafoAciclico.toGrafo();
             desenhaGrafo(grafo);
+            atualizarBotoes();
         }
     });
     electron.ipcRenderer.send("abrir-grafo", "set-grafo");

@@ -21,6 +21,23 @@ div#botoes {
     padding: 8px 12px;
 }
 
+button.fluid {
+    width: 100%;
+}
+
+button.spaced {
+    margin: 4px 0;
+}
+
 div.vazio {
-    height: 6px;
+    height: 40px;
+}
+
+div.copyright {
+    color: #999;
+    width: 100%;
+    bottom: 0;
+    position: absolute;
+    text-align: center;
+    padding: 4px 2px;    
 }

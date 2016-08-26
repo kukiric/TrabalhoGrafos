@@ -9,14 +9,21 @@
 <body>
     <canvas id="grafo" width="1024" height="768"></canvas>
     <div id="botoes">
-        <button type="button" onclick="abrirGrafo();">Abrir grafo</button>
-        <button type="button" onclick="devTools();">Abrir ferramentas de desenvolvimento</button>
-        <hr>
-        Início: <input type="text" id="grafo_v1" value="A">
-        Final: <input type="text" id="grafo_v2" value="D">
+        <button type="button" id="botao_abrir" class="fluid spaced waves-effect waves-light green btn" onclick="abrirGrafo();">Abrir grafo</button>
+        <button type="button" class="fluid spaced waves-effect waves-light blue btn" onclick="devTools();">Abrir dev tools</button>
         <div class="vazio"></div>
-        <button type="button" onclick="fazerDFS();">Realizar busca DFS <i>(depth-first)</i></button>
-        <button type="button" onclick="fazerBFS();">Realizar busca BFS <i>(breadth-first)</i></button>
-        <button type="button" onclick="testeIsConexo();">Testar conectividade</button>
+        <div class="vazio"></div>
+        <div class="input-field">
+            <input type="text" id="grafo_v1" class="validate">
+            <label for="grafo_v1">Vértice inicial</label>
+        </div>
+        <div class="input-field">
+            <input type="text" id="grafo_v2" class="validate">
+            <label for="grafo_v2">Vértice final</label>
+        </div>
+        <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="fazerDFS();">Realizar busca DFS <em>(depth-first)</em></button>
+        <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="fazerBFS();">Realizar busca BFS <em>(breadth-first)</em></button>
+        <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="testeIsConexo();">Testar conectividade</button>
+        <div class="copyright">Copyright 2016 Marcelo e Ricardo</div>
     </div>
 </body>
