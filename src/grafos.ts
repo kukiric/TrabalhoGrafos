@@ -61,8 +61,6 @@ export class Grafo {
     public constructor() {
         this.vertices = new Array();
         this.arcos = new Array();
-        this.ponderado = false;
-        this.dirigido = false;
     }
 
     public getVerticePorID(id: number): Vertice {
@@ -147,19 +145,26 @@ export class VerticeAciclico {
 
 export class GrafoAciclico {
     public vertices: VerticeAciclico[];
+    public ponderado: boolean;
+    public dirigido: boolean;
 
     constructor(grafo: Grafo) {
         this.vertices = grafo.vertices.map(vertice => new VerticeAciclico(vertice));
+        this.ponderado = grafo.ponderado;
+        this.dirigido = grafo.dirigido;
     }
 
     public toGrafo(): Grafo {
         let grafo = new Grafo();
-        // Primeiro re-cria os vértices
+        // Copia as propriedades
+        grafo.ponderado = this.ponderado;
+        grafo.dirigido = this.dirigido;
+        // Re-cria os vértices
         this.vertices.forEach(vertice => {
             let verticeReal = new Vertice(vertice.id, vertice.nome, {x: vertice.x, y: vertice.y});
             grafo.vertices.push(verticeReal);
         });
-        // Depois os arcos
+        // Re-cria os arcos
         this.vertices.forEach(vertice => {
             vertice.arcos.forEach(arco => {
                 let v1 = grafo.getVerticePorID(vertice.id);

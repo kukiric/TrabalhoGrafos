@@ -88,18 +88,10 @@ function centro(elementos, getx, gety) {
     let maxX = minX, maxY = minY;
     elementos.slice(1).forEach(elemento => {
         let x = getx(elemento), y = gety(elemento);
-        if (x < minX) {
-            minX = x;
-        }
-        if (x > maxX) {
-            maxX = x;
-        }
-        if (y < minY) {
-            minY = y;
-        }
-        if (y > maxY) {
-            maxY = y;
-        }
+        minX = Math.min(x, minX);
+        maxX = Math.max(x, maxX);
+        minY = Math.min(y, minY);
+        maxY = Math.max(y, maxY);
     });
     return {x: (minX + maxX) / 2, y: (minY + maxY) / 2};
 }
@@ -119,7 +111,8 @@ function canvas_arrow(context, fromx, fromy, tox, toy){
 }
 
 function desenhaGrafo(grafo) {
-    const raio = 16;
+    const raioVertice = 16;
+    const larguraLinha = 2;
     contexto.canvas.width = contexto.canvas.scrollWidth;
     contexto.canvas.height = contexto.canvas.scrollHeight;
     contexto.clearRect(0, 0, contexto.canvas.width, contexto.canvas.height);
@@ -131,9 +124,9 @@ function desenhaGrafo(grafo) {
         let x = centroCanvas.x + vertice.posicao.x - centroGrafo.x;
         let y = centroCanvas.y + vertice.posicao.y - centroGrafo.y;
         contexto.beginPath();
-        contexto.lineWidth = 4;
+        contexto.lineWidth = larguraLinha * 2;
         contexto.strokeStyle = "black";
-        contexto.arc(x, y, raio, 0, 2*Math.PI);
+        contexto.arc(x, y, raioVertice, 0, 2*Math.PI);
         contexto.stroke();
         // Pinta os vértices percorridos
         if (percorridos.find(nomeVertice => nomeVertice == vertice.nome)) {
@@ -142,7 +135,7 @@ function desenhaGrafo(grafo) {
         else {
             contexto.fillStyle = "lightgray";
         }
-        contexto.arc(x, y, raio, 0, 2*Math.PI);
+        contexto.arc(x, y, raioVertice, 0, 2*Math.PI);
         contexto.fill();
         contexto.fillStyle = "black";
         contexto.textAlign = "center";
@@ -154,32 +147,22 @@ function desenhaGrafo(grafo) {
         let y1 = centroCanvas.y + v1.posicao.y - centroGrafo.y;
         let x2 = centroCanvas.x + v2.posicao.x - centroGrafo.x;
         let y2 = centroCanvas.y + v2.posicao.y - centroGrafo.y;
-        // Move os finais das arestas para uma de quatro posições do círculo
-        if (x1 - raio > x2) {
-            //x1 -= raio;
-            x2 += raio;
-        }
-        else if (x1 + raio < x2) {
-            //x1 += raio;
-            x2 -= raio;
-        }
-        if (y1 - raio > y2) {
-            //y1 -= raio;
-            y2 += raio;
-        }
-        else if (y1 + raio < y2) {
-            //y1 += raio;
-            y2 -= raio;
-        }
         let angulo = Math.atan2(y2 - y1, x2 - x1);
-        x2 += Math.cos(angulo) * Math.PI / raio;
-        y2 += Math.sin(angulo) * Math.PI / raio;
+        // Desloca o início e o fim da linha até os raios dos vértices
+        let distancia = raioVertice + larguraLinha; 
+        x1 += distancia * Math.cos(angulo);
+        y1 += distancia * Math.sin(angulo);
+        x2 -= distancia * Math.cos(angulo);
+        y2 -= distancia * Math.sin(angulo);
         contexto.strokeStyle = "black";
         contexto.beginPath();
-        contexto.lineWidth = 2;
+        contexto.lineWidth = larguraLinha;
         contexto.moveTo(x1, y1);
         contexto.lineTo(x2, y2);
-        canvas_arrow(contexto, x1, y1, x2, y2);
+        // Desenha seta somente se o grafo for direcionado
+        if (grafo.dirigido) {
+            canvas_arrow(contexto, x1, y1, x2, y2);
+        }
         contexto.stroke();
     }
     // Desenha os arcos primeiro
