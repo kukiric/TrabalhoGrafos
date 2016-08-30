@@ -202,7 +202,7 @@ export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         visitados.push(inicial);
         return new ResultadoBusca(inicial, procurado, visitados, true);
     }
-    if (visitados === undefined) {
+    if (visitados == null) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
     }
@@ -225,37 +225,38 @@ export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
     return new ResultadoBusca(inicial, procurado || null, visitados, encontrado);
 }
 
-export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): ResultadoBusca {
+export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], fila?: Vertice[]): ResultadoBusca {
     if (inicial === procurado) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
         return new ResultadoBusca(inicial, procurado, visitados, true);
     }
-    if (visitados === undefined) {
+    if (visitados == null) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
     }
-    let novasVisitas = Array<Vertice>();
+    if (fila == null) {
+        fila = new Array<Vertice>();
+        fila.push(inicial);
+    }
     let encontrado = inicial.adjacentes.some(adjacente => {
-        // Busca todos os adjacentes ainda não visitados e os adiciona na fila
+        // Adiciona todos os vértices adjacentes ainda não visitados na fila
         if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
             visitados.push(adjacente);
-            // Pára se o vértice final for encontrado
+            // Pára imediatamente se o vértice final for encontrado
             if (adjacente.equals(procurado)) {
                 return true;
             }
-            novasVisitas.push(adjacente);
+            fila.push(adjacente);
         }
         return false;
     });
-    // Depois, percorre a fila até encontrar o vértice adjacente
     if (!encontrado) {
-        encontrado = novasVisitas.some(adjacente => {
-            if (buscaBFS(adjacente, procurado, visitados).encontrado) {
-                return true;
-            }
-            return false;
-        });
+        // Remove esse elemento e segue para o próximo da fila
+        fila.shift();
+        if (fila.length > 0) {
+            encontrado = buscaBFS(fila[0], procurado, visitados, fila).encontrado;
+        }
     }
     return new ResultadoBusca(inicial, procurado || null, visitados, encontrado);
 }
