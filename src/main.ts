@@ -6,7 +6,7 @@ let janela: Electron.BrowserWindow;
 
 electron.app.on("ready", () => {
     // Abre a janela
-    janela = new electron.BrowserWindow();
+    janela = new electron.BrowserWindow({title: "Grafos"});
     janela.setMenu(null);
     janela.maximize();
     janela.loadURL("file://" + __dirname + "/../view/index.html");

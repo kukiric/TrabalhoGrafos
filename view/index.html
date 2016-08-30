@@ -7,23 +7,24 @@
     <script defer src="index.js"></script>
 </head>
 <body>
-    <canvas id="grafo" width="1024" height="768"></canvas>
-    <div id="botoes">
+    <canvas class="grafo" id="grafo"></canvas>
+    <div class="menu z-depth-1" id="botoes">
         <button type="button" id="botao_abrir" class="fluid spaced waves-effect waves-light green btn" onclick="abrirGrafo();">Abrir grafo</button>
-        <button type="button" class="fluid spaced waves-effect waves-light blue btn" onclick="devTools();">Abrir dev tools</button>
-        <div class="vazio"></div>
         <div class="vazio"></div>
         <div class="input-field">
-            <input type="text" id="grafo_v1" class="validate">
+            <input type="text" id="grafo_v1" class="">
             <label for="grafo_v1">Vértice inicial</label>
         </div>
         <div class="input-field">
-            <input type="text" id="grafo_v2" class="validate">
+            <input type="text" id="grafo_v2" class="">
             <label for="grafo_v2">Vértice final</label>
         </div>
         <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="fazerDFS();">Realizar busca DFS <em>(depth-first)</em></button>
         <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="fazerBFS();">Realizar busca BFS <em>(breadth-first)</em></button>
         <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="testeIsConexo();">Testar conectividade</button>
-        <div class="copyright">Copyright 2016 Marcelo e Ricardo</div>
+        <div class="fundo">
+            <button type="button" class="fluid spaced waves-effect waves-light blue btn" onclick="devTools();">Abrir dev tools</button>
+        </div>
+        <div class="copyright">Trabalho de Grafos © 2016 Marcelo e Ricardo</div>
     </div>
 </body>

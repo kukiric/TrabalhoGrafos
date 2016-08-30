@@ -2,22 +2,21 @@ body {
     margin: 0;
 }
 
-canvas#grafo {
+canvas.grafo {
     position: fixed;
     width: calc(100% - 400px);
     height: 100%;
     top: 0;
-    left: 400px;
+    right: 400px;
     background-color: white;
 }
 
-div#botoes {
+div.menu {
     position: fixed;
     width: 400px;
     height: 100%;
     top: 0;
-    left: 0;
-    border-right: 1px solid #aaa;
+    right: 0;
     padding: 8px 12px;
 }
 
@@ -33,11 +32,18 @@ div.vazio {
     height: 40px;
 }
 
-div.copyright {
-    color: #999;
-    width: 100%;
-    bottom: 0;
+div.fundo {
+    bottom: 8px;
     position: absolute;
+    width: calc(100% - 24px);
+}
+
+div.copyright {
+    color: #aaa;
+    bottom: 0;
+    left: 0;
+    position: fixed;
     text-align: center;
-    padding: 4px 2px;    
+    padding: 2px 8px;
+    font-size: 80%;
 }

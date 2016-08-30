@@ -13,7 +13,6 @@ window.addEventListener("resize", event => {
 });
 
 function atualizarBotoes() {
-    $("#botao_abrir").removeClass("green").addClass("blue");
     $('#botoes').children("button").each(function() {
         $(this).prop("disabled", false);
     });
