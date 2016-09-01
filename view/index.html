@@ -1,6 +1,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="../node_modules/materialize-css/dist/css/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="../node_modules/material-design-icons/iconfont/material-icons.css">
     <link rel="stylesheet" type="text/css" href="index.css">
     <script defer src="../node_modules/hammerjs/hammer.js"></script>
     <script defer src="../node_modules/materialize-css/dist/js/materialize.min.js"></script>
@@ -9,22 +10,24 @@
 <body>
     <canvas class="grafo" id="grafo"></canvas>
     <div class="menu z-depth-1" id="botoes">
-        <button type="button" id="botao_abrir" class="fluid spaced waves-effect waves-light green btn" onclick="abrirGrafo();">Abrir grafo</button>
+        <button type="button" id="botao_abrir" class="fluid spaced waves-effect waves-light green btn" onclick="abrirGrafo();">Abrir Grafo</button>
         <div class="vazio"></div>
         <div class="input-field">
-            <input type="text" id="grafo_v1" class="">
-            <label for="grafo_v1">Vértice inicial</label>
+            <select id="grafo_v1" disabled>
+            </select>
+            <label>Vértice inicial</label>
         </div>
         <div class="input-field">
-            <input type="text" id="grafo_v2" class="">
-            <label for="grafo_v2">Vértice final</label>
+            <select id="grafo_v2" disabled>
+            </select>
+            <label>Vértice final</label>
         </div>
-        <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="fazerDFS();">Realizar busca DFS <em>(depth-first)</em></button>
-        <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="fazerBFS();">Realizar busca BFS <em>(breadth-first)</em></button>
-        <button type="button" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="testeIsConexo();">Testar conectividade</button>
-        <div class="fundo">
+        <button type="button" id="botao_dfs" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="buscar(grafos.buscaDFS);">Realizar busca DFS <em>(depth-first)</em></button>
+        <button type="button" id="botao_bfs" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="buscar(grafos.buscaBFS);">Realizar busca BFS <em>(breadth-first)</em></button>
+        <button type="button" id="botao_conexo" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="testeIsConexo();">Testar conectividade</button>
+        <div class="baixo">
             <button type="button" class="fluid spaced waves-effect waves-light blue btn" onclick="devTools();">Abrir dev tools</button>
         </div>
-        <div class="copyright">Trabalho de Grafos © 2016 Marcelo e Ricardo</div>
     </div>
+    <div class="copyright">Trabalho de Grafos © 2016 Marcelo e Ricardo</div>
 </body>

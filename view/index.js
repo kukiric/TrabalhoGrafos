@@ -12,11 +12,21 @@ window.addEventListener("resize", event => {
     }
 });
 
-function atualizarBotoes() {
-    $('#botoes').children("button").each(function() {
-        $(this).prop("disabled", false);
+function grafoSelecionado(grafo) {
+    let select = $("#botoes select");
+    select.empty();
+    if (grafo != null) {
+        $("#grafo_v2").append($("<option></option>").attr("value", "null").text("Indefinido"));
+        grafo.vertices.forEach(vertice => {
+            select.append($("<option></option").attr("value", vertice.nome).text(vertice.nome));
+        });
+    }
+    $("#botao_dfs, #botao_bfs, #botao_conexo, #grafo_v1, #grafo_v2").each(function() {
+        $(this).prop("disabled", grafo == null);
     });
+    select.material_select();
 }
+grafoSelecionado(null);
 
 function abrirGrafo() {
     electron.ipcRenderer.once("set-grafo", (evento, grafoAciclico) => {
@@ -24,8 +34,8 @@ function abrirGrafo() {
             percorridos = [];
             grafoAciclico.toGrafo = grafos.GrafoAciclico.prototype.toGrafo;
             grafo = grafoAciclico.toGrafo();
+            grafoSelecionado(grafo);
             desenhaGrafo(grafo);
-            atualizarBotoes();
         }
     });
     electron.ipcRenderer.send("abrir-grafo", "set-grafo");
@@ -35,15 +45,9 @@ function devTools() {
     electron.ipcRenderer.send('dev-tools');
 }
 
-function busca(verticeInicial, verticeFinal, algoritmo) {
-    verticeInicial = verticeInicial.trim().toUpperCase();
-    verticeFinal = verticeFinal.trim().toUpperCase();
+function chamarBusca(verticeInicial, verticeFinal, algoritmo) {
     let v1 = grafo.getVerticePorNome(verticeInicial);
     let v2 = grafo.getVerticePorNome(verticeFinal);
-    if (v1 == null && v2 == null) {
-        alert("Os vértices " + verticeInicial + " e " + verticeFinal + " não existem no grafo!");
-        return;
-    }
     if (v1 == null) {
         alert("O vértice " + verticeInicial + " não existe no grafo!");
         return;
@@ -52,24 +56,58 @@ function busca(verticeInicial, verticeFinal, algoritmo) {
         alert("O vértice " + verticeFinal + " não existe no grafo!");
         return;
     }
-    console.warn("A busca será realizadas no processo do navegador");
     let resultado = algoritmo(v1, v2);
-    percorridos = resultado.visitados.map((vertice) => vertice.nome);    
+    percorridos = resultado.visitados.map(vertice => vertice.nome);
     alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (resultado.encontrado ? "Sim" : "Não"));
     desenhaGrafo(grafo);
 }
 
-function fazerDFS() {
+function chamarBuscaCompleta(verticeInicial, algoritmo) {
+    let v1 = grafo.getVerticePorNome(verticeInicial);
+    if (v1 == null) {
+        alert("O vértice " + verticeInicial + " não existe no grafo!");
+        return;
+    }
+    let visitados = [];
+    // Percorre o grafo até todos os vértices terem sidos visistados, até os não conexos
+    while (true) {
+        visitados.push(v1);
+        let resultado = algoritmo(v1, null, visitados);
+        visistados = visitados.concat(resultado.visistados); 
+        // Busca o próximo vértice não visitado
+        let completo = grafo.vertices.every(vertice => {
+            if (visistados.find(visistado => vertice.equals(visistado))) {
+                return true;
+            }
+            else {
+                v1 = vertice;
+                return false;
+            }
+        })
+        // Termina o loop quando não houver mais nehnum vértice sobrando
+        if (completo) {
+            break;
+        }
+    }
+    percorridos = visitados.map(vertice => vertice.nome);
+    alert("Vértices percorridos a partir de " + verticeInicial + " (busca completa): [" + percorridos.join(", ") + "]");
+    desenhaGrafo(grafo);
+}
+
+function buscar(algoritmo) {
     if (grafo != null) {
-        busca(document.getElementById("grafo_v1").value, document.getElementById("grafo_v2").value, grafos.buscaDFS);
+        let v1 = document.getElementById("grafo_v1").value;
+        let v2 = document.getElementById("grafo_v2").value;
+        // Não alterar, o valor do null é representado em string no DOM
+        if (v2 !== "null") {
+            chamarBusca(v1, v2, algoritmo);
+        }
+        else {
+            chamarBuscaCompleta(v1, algoritmo);
+        }
     }
 }
 
-function fazerBFS() {
-    if (grafo != null) {
-        busca(document.getElementById("grafo_v1").value, document.getElementById("grafo_v2").value, grafos.buscaBFS);
-    }
-}
 
 function testeIsConexo() {
     if (grafo != null) {
