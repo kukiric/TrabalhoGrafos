@@ -186,51 +186,49 @@ export class ResultadoBusca {
     inicial: Vertice;
     procurado: Vertice;
     visitados: Vertice[];
+    caminho: Vertice[];
     encontrado: boolean;
 
-    constructor(inicial: Vertice, procurado: Vertice, visitados: Vertice[], encontrado: boolean) {
+    constructor(inicial: Vertice, procurado: Vertice, visitados: Vertice[], caminho: Vertice[], encontrado: boolean) {
         this.inicial = inicial;
         this.procurado = procurado;
         this.visitados = visitados;
+        this.caminho = caminho;
         this.encontrado = encontrado;
     }
 }
 
-export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): ResultadoBusca {
-    if (inicial === procurado) {
-        visitados = new Array<Vertice>();
-        visitados.push(inicial);
-        return new ResultadoBusca(inicial, procurado, visitados, true);
-    }
+export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], caminho?: Vertice[]): ResultadoBusca {
     if (visitados == null) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
     }
-    let encontrado = inicial.adjacentes.some(adjacente => {
-        // Busca todos os adjacentes ainda não visitados
-        if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
-            visitados.push(adjacente);
-            // Pára no momento que o vértice final for encontrado
-            if (adjacente.equals(procurado)) {
-                return true;
+    if (caminho == null) {
+        caminho = new Array<Vertice>();
+    }
+    // Pára se esse for o vértice procurado
+    let encontrado = inicial.equals(procurado);
+    if (!encontrado) {
+        encontrado = inicial.adjacentes.some(adjacente => {
+            // Busca todos os adjacentes ainda não visitados
+            if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
+                visitados.push(adjacente);
+                if (buscaDFS(adjacente, procurado, visitados, caminho).encontrado) {
+                    return true;
+                }
             }
-            // Se não, continua a busca a partir desse vértice, até o vértice procurado ser encontrado
-            if (buscaDFS(adjacente, procurado, visitados).encontrado) {
-                return true;
-            }
-        }
-        return false;
-    });
+            return false;
+        });
+    }
+    // Adiciona o elemento no caminho se encontrado
+    if (encontrado) {
+        caminho.unshift(inicial);
+    }
     // Retorna os resultados da busca
-    return new ResultadoBusca(inicial, procurado || null, visitados, encontrado);
+    return new ResultadoBusca(inicial, procurado || null, visitados, caminho, encontrado);
 }
 
 export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], fila?: Vertice[]): ResultadoBusca {
-    if (inicial === procurado) {
-        visitados = new Array<Vertice>();
-        visitados.push(inicial);
-        return new ResultadoBusca(inicial, procurado, visitados, true);
-    }
     if (visitados == null) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
@@ -239,18 +237,23 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         fila = new Array<Vertice>();
         fila.push(inicial);
     }
-    let encontrado = inicial.adjacentes.some(adjacente => {
-        // Adiciona todos os vértices adjacentes ainda não visitados na fila
-        if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
-            visitados.push(adjacente);
-            // Pára imediatamente se o vértice final for encontrado
-            if (adjacente.equals(procurado)) {
-                return true;
+    let encontrado = inicial.equals(procurado);
+    if (!encontrado) {
+        encontrado = inicial.adjacentes.some(adjacente => {
+            // Adiciona todos os vértices adjacentes ainda não visitados na fila
+            if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
+                visitados.push(adjacente);
+                // Pára se encontrar o elemento na lista de adjacentes
+                if (adjacente.equals(procurado)) {
+                    return true;
+                }
+                else {
+                    fila.push(adjacente);
+                }
             }
-            fila.push(adjacente);
-        }
-        return false;
-    });
+            return false;
+        });
+    }
     if (!encontrado) {
         // Remove esse elemento e segue para o próximo da fila
         fila.shift();
@@ -258,7 +261,8 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
             encontrado = buscaBFS(fila[0], procurado, visitados, fila).encontrado;
         }
     }
-    return new ResultadoBusca(inicial, procurado || null, visitados, encontrado);
+    // E retorna o resultado
+    return new ResultadoBusca(inicial, procurado || null, visitados, [], encontrado);
 }
 
 /////////////////////////

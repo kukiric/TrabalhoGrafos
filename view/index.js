@@ -3,6 +3,7 @@ const grafos = require("../src/grafos");
 require("jquery");
 
 const contexto = document.getElementById("grafo").getContext("2d");
+let encontrado = false;
 let percorridos;
 let grafo;
 
@@ -34,6 +35,7 @@ function abrirGrafo() {
             percorridos = [];
             grafoAciclico.toGrafo = grafos.GrafoAciclico.prototype.toGrafo;
             grafo = grafoAciclico.toGrafo();
+            encontrado = false;
             grafoSelecionado(grafo);
             desenhaGrafo(grafo);
         }
@@ -58,7 +60,9 @@ function chamarBusca(verticeInicial, verticeFinal, algoritmo) {
     }
     let resultado = algoritmo(v1, v2);
     percorridos = resultado.visitados.map(vertice => vertice.nome);
-    alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (resultado.encontrado ? "Sim" : "Não"));
+    encontrado = resultado.encontrado;
+    caminho = resultado.caminho;
+    alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (encontrado ? "Sim" : "Não"));
     desenhaGrafo(grafo);
 }
 
@@ -90,6 +94,7 @@ function chamarBuscaCompleta(verticeInicial, algoritmo) {
         }
     }
     percorridos = visitados.map(vertice => vertice.nome);
+    encontrado = false;
     alert("Vértices percorridos a partir de " + verticeInicial + " (busca completa): [" + percorridos.join(", ") + "]");
     desenhaGrafo(grafo);
 }
@@ -147,6 +152,11 @@ function canvas_arrow(context, fromx, fromy, tox, toy){
     context.lineTo(tox-headlen*Math.cos(angle+Math.PI/arrowangle),toy-headlen*Math.sin(angle+Math.PI/arrowangle));
 }
 
+function noCaminho(caminho, v1, v2) {
+    // Retorna se o v2 encontra-se após o v1 no caminho
+    return caminho.slice(0, caminho.length - 1).find((v, indice) => v.equals(v1) && v2.equals(caminho[indice+1])) != null;
+}
+
 function desenhaGrafo(grafo) {
     const raioVertice = 16;
     const larguraLinha = 2;
@@ -191,7 +201,12 @@ function desenhaGrafo(grafo) {
         y1 += distancia * Math.sin(angulo);
         x2 -= distancia * Math.cos(angulo);
         y2 -= distancia * Math.sin(angulo);
-        contexto.strokeStyle = "black";
+        if (encontrado && noCaminho(caminho, v1, v2)) {
+            contexto.strokeStyle = "red";
+        }
+        else {
+            contexto.strokeStyle = "black";
+        }
         contexto.beginPath();
         contexto.lineWidth = larguraLinha;
         contexto.moveTo(x1, y1);
