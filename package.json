@@ -11,7 +11,7 @@
   "dependencies": {
     "hammerjs": "^2.0.8",
     "jquery": "^3.1.0",
-    "material-design-icons": "^3.0.0",
+    "material-design-icons-iconfont": "^3.0.0",
     "materialize-css": "^0.97.7",
     "xml2js": "^0.4.17"
   },
