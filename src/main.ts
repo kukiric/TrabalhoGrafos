@@ -19,30 +19,21 @@ electron.app.on("ready", () => {
         janela.maximize();
     });
 
-    // Abre a página principal da aplicação
-    janela.webContents.loadURL("file://" + __dirname + "/../view/index.html");
-
-    // Adiciona os eventos
-    electron.ipcMain.on("dev-tools", () => {
-        const contents = janela.webContents;
-        if (contents.isDevToolsOpened()) {
-            contents.closeDevTools();
-        }
-        else {
-            contents.openDevTools();
-        }
-    })
-    // Importa um grafo de .xml e envia de volta pelo evento de retorno passado como parâmetro
-    .on("abrir-grafo", (evento, retorno) => {
+    // Cria os eventos chamváveis do processo do navegador
+    electron.ipcMain.on("abrir-grafo", (esseEvento, eventoRetorno) => {
+        // Importa o grafo em um .XML e o envia de volta pelo evento de retorno passado como parâmetro
         let arquivo = electron.dialog.showOpenDialog({properties: ["openFile"]});
         if (arquivo != null) {
             let grafo = grafos.importarXML(arquivo[0]);
-            evento.sender.send(retorno, new grafos.GrafoAciclico(grafo));
+            esseEvento.sender.send(eventoRetorno, new grafos.GrafoAciclico(grafo));
         }
         else {
-            evento.sender.send(retorno, null);
+            esseEvento.sender.send(eventoRetorno, null);
         }
     });
+
+    // Abre a página principal da aplicação
+    janela.webContents.loadURL("file://" + __dirname + "/../view/index.html");
 })
 .on("window-all-closed", () => {
     // Finaliza a aplicação

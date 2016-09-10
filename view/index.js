@@ -44,7 +44,7 @@ function abrirGrafo() {
 }
 
 function devTools() {
-    electron.ipcRenderer.send('dev-tools');
+    electron.remote.getCurrentWebContents().toggleDevTools();
 }
 
 function chamarBusca(verticeInicial, verticeFinal, algoritmo) {
