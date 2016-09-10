@@ -5,14 +5,22 @@ import grafos = require("./grafos");
 let janela: Electron.BrowserWindow;
 
 electron.app.on("ready", () => {
-    // Abre a janela
-    janela = new electron.BrowserWindow({title: "Grafos"});
+    // Cria a janela do navegador sem barra de menu
+    janela = new electron.BrowserWindow({title: "Grafos", show: false});
     janela.setMenu(null);
-    janela.maximize();
-    janela.loadURL("file://" + __dirname + "/../view/index.html");
-    if (process.env.NODE_ENV === "development") {
-        janela.webContents.openDevTools();
-    }
+
+    // Exibe a janela na primeira vez que a página terminar de carregar
+    janela.webContents.on("did-finish-load", () => {
+        janela.webContents.removeAllListeners("did-finish-load");
+        // Abre as ferramentas de desenvolvimento em modo debug
+        if (process.env.NODE_ENV === "development") {
+            janela.webContents.openDevTools();
+        }
+        janela.maximize();
+    });
+
+    // Abre a página principal da aplicação
+    janela.webContents.loadURL("file://" + __dirname + "/../view/index.html");
 
     // Adiciona os eventos
     electron.ipcMain.on("dev-tools", () => {
