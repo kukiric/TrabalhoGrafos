@@ -10,7 +10,7 @@
             "args": [],
             "cwd": "${workspaceRoot}",
             "preLaunchTask": "tsc",
-            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/electron-prebuilt/dist/electron",
             "runtimeArgs": [
                 "--nolazy"
             ],
@@ -21,7 +21,7 @@
             "sourceMaps": true,
             "outDir": null,
             "windows": {
-                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.exe"
+                "runtimeExecutable": "${workspaceRoot}\\node_modules\\electron-prebuilt\\dist\\electron.exe"
             }
         },
         {

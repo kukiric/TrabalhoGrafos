@@ -1,11 +1,21 @@
 {
   "name": "trabalho-grafos",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.2.0",
+  "description": "Trabalho de Grafos",
+  "contributors": [
+    {
+      "name": "Marcelo Leonardo de Souza",
+      "email": "marcelo.souza@sapo.pt"
+    },
+    {
+      "name": "Ricardo Maes",
+      "email": "ricmzn@gmail.com"
+    }
+  ],
   "scripts": {
-    "start": "tsc -p . && electron src/main.js"
+    "tsc": "tsc -p .",
+    "start": "electron src/main.js"
   },
-  "author": "",
   "license": "MIT",
   "dependencies": {
     "hammerjs": "^2.0.8",
