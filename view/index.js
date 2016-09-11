@@ -3,6 +3,7 @@ const grafos = require("../src/grafos");
 require("jquery");
 
 const contexto = document.getElementById("grafo").getContext("2d");
+let buscaCompleta = false;
 let encontrado = false;
 let percorridos;
 let caminho;
@@ -33,10 +34,9 @@ grafoSelecionado(null);
 function abrirGrafo() {
     electron.ipcRenderer.once("set-grafo", (evento, grafoAciclico) => {
         if (grafoAciclico != null) {
-            percorridos = [];
+            limparBusca();
             grafoAciclico.toGrafo = grafos.GrafoAciclico.prototype.toGrafo;
             grafo = grafoAciclico.toGrafo();
-            encontrado = false;
             grafoSelecionado(grafo);
             desenhaGrafo(grafo);
         }
@@ -63,6 +63,7 @@ function chamarBusca(verticeInicial, verticeFinal, algoritmo) {
     percorridos = resultado.visitados.map(vertice => vertice.nome);
     encontrado = resultado.encontrado;
     caminho = resultado.caminho;
+    buscaCompleta = false;
     alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (encontrado ? "Sim" : "Não"));
     desenhaGrafo(grafo);
 }
@@ -94,8 +95,10 @@ function chamarBuscaCompleta(verticeInicial, algoritmo) {
             break;
         }
     }
+    limparBusca();
     percorridos = visitados.map(vertice => vertice.nome);
     encontrado = false;
+    buscaCompleta = true;
     alert("Vértices percorridos a partir de " + verticeInicial + " (busca completa): [" + percorridos.join(", ") + "]");
     desenhaGrafo(grafo);
 }
@@ -114,7 +117,6 @@ function buscar(algoritmo) {
     }
 }
 
-
 function testeIsConexo() {
     if (grafo != null) {
         if (grafo.isConexo()) {
@@ -124,6 +126,12 @@ function testeIsConexo() {
             alert("Conexo: Não");
         }
     }
+}
+
+function limparBusca() {
+    caminho = [];
+    percorridos = [];
+    encontrado = false;
 }
 
 function centro(elementos, getx, gety) {
@@ -145,12 +153,12 @@ function centro(elementos, getx, gety) {
 function canvas_arrow(context, fromx, fromy, tox, toy) {
     const headlen = 10; // length of head in pixels
     const arrowangle = 6; // 360 degrees divided by this = actual angle
-    const angle = Math.atan2(toy-fromy,tox-fromx);
-    context.moveTo(fromx, fromy);
-    context.lineTo(tox, toy);
-    context.lineTo(tox-headlen*Math.cos(angle-Math.PI/arrowangle),toy-headlen*Math.sin(angle-Math.PI/arrowangle));
+    const angle = Math.atan2(toy - fromy, tox - fromx);
     context.moveTo(tox, toy);
-    context.lineTo(tox-headlen*Math.cos(angle+Math.PI/arrowangle),toy-headlen*Math.sin(angle+Math.PI/arrowangle));
+    context.lineTo(tox - headlen * Math.cos(angle - Math.PI / arrowangle), toy - headlen * Math.sin(angle - Math.PI / arrowangle));
+    context.lineTo(tox - headlen * Math.cos(angle + Math.PI / arrowangle), toy - headlen * Math.sin(angle + Math.PI / arrowangle));
+    context.lineTo(tox, toy);
+    context.fill();
 }
 
 function noCaminho(caminho, v1, v2) {
@@ -176,9 +184,12 @@ function desenhaGrafo(grafo) {
         contexto.strokeStyle = "black";
         contexto.arc(x, y, raioVertice, 0, 2*Math.PI);
         contexto.stroke();
-        // Pinta os vértices percorridos
-        if (percorridos.find(nomeVertice => nomeVertice == vertice.nome)) {
-            contexto.fillStyle = "lightblue";
+        // Pinta os vértices do caminho encontrado em um destaque, e os outros percorridos em outro
+        if (buscaCompleta || caminho.find(outroVertice => vertice.equals(outroVertice))) {
+            contexto.fillStyle = "#64e764";
+        }
+        else if (percorridos.find(nomeVertice => nomeVertice === vertice.nome)) {
+            contexto.fillStyle = "#ff6e38";
         }
         else {
             contexto.fillStyle = "lightgray";
@@ -202,21 +213,24 @@ function desenhaGrafo(grafo) {
         y1 += distancia * Math.sin(angulo);
         x2 -= distancia * Math.cos(angulo);
         y2 -= distancia * Math.sin(angulo);
-        if (encontrado && noCaminho(caminho, v1, v2)) {
-            contexto.strokeStyle = "red";
+        // Pinta as arestas que fazem parte do caminho em destaque
+        if (!encontrado || buscaCompleta || noCaminho(caminho, v1, v2)) {
+            contexto.strokeStyle = "black";
+            contexto.fillStyle = "black";
         }
         else {
-            contexto.strokeStyle = "black";
+            contexto.strokeStyle = "lightgray";
+            contexto.fillStyle = "lightgray";
         }
-        contexto.beginPath();
         contexto.lineWidth = larguraLinha;
+        contexto.beginPath();
         contexto.moveTo(x1, y1);
         contexto.lineTo(x2, y2);
-        // Desenha seta somente se o grafo for direcionado
+        contexto.stroke();
+        // Desenha a seta somente se o grafo for direcionado
         if (grafo.dirigido) {
             canvas_arrow(contexto, x1, y1, x2, y2);
         }
-        contexto.stroke();
     }
     // Desenha os arcos primeiro
     grafo.vertices.forEach(vertice => {
