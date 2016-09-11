@@ -5,6 +5,7 @@ require("jquery");
 const contexto = document.getElementById("grafo").getContext("2d");
 let encontrado = false;
 let percorridos;
+let caminho;
 let grafo;
 
 window.addEventListener("resize", event => {
@@ -87,7 +88,7 @@ function chamarBuscaCompleta(verticeInicial, algoritmo) {
                 v1 = vertice;
                 return false;
             }
-        })
+        });
         // Termina o loop quando não houver mais nehnum vértice sobrando
         if (completo) {
             break;
@@ -141,7 +142,7 @@ function centro(elementos, getx, gety) {
 // Função adaptada do StackOverflow
 // Usuário: http://stackoverflow.com/users/796329/titus-cieslewski
 // Postagem: http://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag/6333775#6333775
-function canvas_arrow(context, fromx, fromy, tox, toy){
+function canvas_arrow(context, fromx, fromy, tox, toy) {
     const headlen = 10; // length of head in pixels
     const arrowangle = 6; // 360 degrees divided by this = actual angle
     const angle = Math.atan2(toy-fromy,tox-fromx);

@@ -173,7 +173,7 @@ export class GrafoAciclico {
                 grafo.arcos.push(arcoReal);
                 v1.arcos.push(arcoReal);
             });
-        })
+        });
         return grafo;
     }
 }
@@ -228,15 +228,37 @@ export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
     return new ResultadoBusca(inicial, procurado || null, visitados, caminho, encontrado);
 }
 
-export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], fila?: Vertice[]): ResultadoBusca {
+// Estrutura privada do BFS
+// Usada para encontrar o caminho final
+class CadeiaBFS {
+    constructor(public pai: CadeiaBFS, public vertice: Vertice) {}
+
+    public caminhoAteRaiz(ultimo: Vertice): Vertice[] {
+        let no: CadeiaBFS = this;
+        let caminho = new Array<Vertice>();
+        while (no.pai != null) {
+            caminho.unshift(no.vertice);
+            no = no.pai;
+        }
+        caminho.unshift(no.vertice);
+        caminho.push(ultimo);
+        return caminho;
+    }
+}
+
+export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], fila?: CadeiaBFS[], cadeia?: CadeiaBFS): ResultadoBusca {
     if (visitados == null) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
     }
-    if (fila == null) {
-        fila = new Array<Vertice>();
-        fila.push(inicial);
+    if (cadeia == null) {
+        cadeia = new CadeiaBFS(null, inicial);
     }
+    if (fila == null) {
+        fila = new Array<CadeiaBFS>();
+        fila.push(cadeia);
+    }
+    let caminho;
     let encontrado = inicial.equals(procurado);
     if (!encontrado) {
         encontrado = inicial.adjacentes.some(adjacente => {
@@ -245,10 +267,11 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
                 visitados.push(adjacente);
                 // Pára se encontrar o elemento na lista de adjacentes
                 if (adjacente.equals(procurado)) {
+                    caminho = cadeia.caminhoAteRaiz(adjacente);
                     return true;
                 }
                 else {
-                    fila.push(adjacente);
+                    fila.push(new CadeiaBFS(cadeia, adjacente));
                 }
             }
             return false;
@@ -258,11 +281,14 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         // Remove esse elemento e segue para o próximo da fila
         fila.shift();
         if (fila.length > 0) {
-            encontrado = buscaBFS(fila[0], procurado, visitados, fila).encontrado;
+            let resultado = buscaBFS(fila[0].vertice, procurado, visitados, fila, fila[0]);
+            // Salva os valores das iterações seguintes
+            encontrado = resultado.encontrado;
+            caminho = resultado.caminho;
         }
     }
     // E retorna o resultado
-    return new ResultadoBusca(inicial, procurado || null, visitados, [], encontrado);
+    return new ResultadoBusca(inicial, procurado || null, visitados, caminho || [], encontrado);
 }
 
 /////////////////////////
