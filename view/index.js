@@ -10,9 +10,7 @@ let caminho;
 let grafo;
 
 window.addEventListener("resize", event => {
-    if (grafo != null) {
-        desenhaGrafo(grafo);
-    }
+    desenhaGrafo(grafo);
 });
 
 function grafoSelecionado(grafo) {
@@ -34,11 +32,10 @@ grafoSelecionado(null);
 function abrirGrafo() {
     electron.ipcRenderer.once("set-grafo", (evento, grafoAciclico) => {
         if (grafoAciclico != null) {
-            limparBusca();
             grafoAciclico.toGrafo = grafos.GrafoAciclico.prototype.toGrafo;
             grafo = grafoAciclico.toGrafo();
             grafoSelecionado(grafo);
-            desenhaGrafo(grafo);
+            limparBusca();
         }
     });
     electron.ipcRenderer.send("abrir-grafo", "set-grafo");
@@ -64,6 +61,7 @@ function chamarBusca(verticeInicial, verticeFinal, algoritmo) {
     encontrado = resultado.encontrado;
     caminho = resultado.caminho;
     buscaCompleta = false;
+    $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
     alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (encontrado ? "Sim" : "Não"));
     desenhaGrafo(grafo);
 }
@@ -99,6 +97,7 @@ function chamarBuscaCompleta(verticeInicial, algoritmo) {
     percorridos = visitados.map(vertice => vertice.nome);
     encontrado = false;
     buscaCompleta = true;
+    $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
     alert("Vértices percorridos a partir de " + verticeInicial + " (busca completa): [" + percorridos.join(", ") + "]");
     desenhaGrafo(grafo);
 }
@@ -132,6 +131,9 @@ function limparBusca() {
     caminho = [];
     percorridos = [];
     encontrado = false;
+    buscaCompleta = false;
+    $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
+    desenhaGrafo(grafo);
 }
 
 function centro(elementos, getx, gety) {
@@ -172,6 +174,9 @@ function desenhaGrafo(grafo) {
     contexto.canvas.width = contexto.canvas.scrollWidth;
     contexto.canvas.height = contexto.canvas.scrollHeight;
     contexto.clearRect(0, 0, contexto.canvas.width, contexto.canvas.height);
+    if (grafo == null) {
+        return;
+    }
     // Calcula o centro do canvas e do grafo
     let centroCanvas = {x: contexto.canvas.width / 2, y: contexto.canvas.height / 2};
     let centroGrafo = centro(grafo.vertices, (v) => v.posicao.x, (v) => v.posicao.y);
