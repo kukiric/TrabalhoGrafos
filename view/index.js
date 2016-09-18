@@ -23,11 +23,11 @@ function grafoSelecionado(grafo) {
             selects.append($("<option></option").attr("value", vertice.nome).text(vertice.nome));
         });
     }
-    selects.material_select();
     // Ativa os botões do menu
     $("#botao_dfs, #botao_bfs, #botao_conexo, #grafo_v1, #grafo_v2").each(function() {
         $(this).prop("disabled", grafo == null);
     });
+    selects.material_select();
     // Preenche as informações do grafo
     if (grafo != null) {
         $("#grafo_vertices").text(grafo.vertices.length);
