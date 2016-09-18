@@ -169,7 +169,7 @@ function noCaminho(caminho, v1, v2) {
 
 function desenhaGrafo(grafo) {
     const raioVertice = 16;
-    const larguraLinha = 2;
+    const larguraLinha = 2;    
     contexto.canvas.width = contexto.canvas.scrollWidth;
     contexto.canvas.height = contexto.canvas.scrollHeight;
     contexto.clearRect(0, 0, contexto.canvas.width, contexto.canvas.height);
@@ -205,20 +205,20 @@ function desenhaGrafo(grafo) {
         contexto.font = "12px sans-serif";
         contexto.fillText(vertice.nome, x, y + 4);
     }
-    function drawArco(v1, v2) {
+    function drawArco(v1, v2, destaque) {
         let x1 = centroCanvas.x + v1.posicao.x - centroGrafo.x;
         let y1 = centroCanvas.y + v1.posicao.y - centroGrafo.y;
         let x2 = centroCanvas.x + v2.posicao.x - centroGrafo.x;
         let y2 = centroCanvas.y + v2.posicao.y - centroGrafo.y;
         let angulo = Math.atan2(y2 - y1, x2 - x1);
         // Desloca o início e o fim da linha até os raios dos vértices
-        let distancia = raioVertice + larguraLinha; 
+        let distancia = raioVertice + larguraLinha;
         x1 += distancia * Math.cos(angulo);
         y1 += distancia * Math.sin(angulo);
         x2 -= distancia * Math.cos(angulo);
         y2 -= distancia * Math.sin(angulo);
         // Pinta as arestas que fazem parte do caminho em destaque
-        if (!encontrado || buscaCompleta || noCaminho(caminho, v1, v2)) {
+        if (destaque) {
             contexto.strokeStyle = "black";
             contexto.fillStyle = "black";
         }
@@ -236,13 +236,24 @@ function desenhaGrafo(grafo) {
             canvas_arrow(contexto, x1, y1, x2, y2);
         }
     }
-    // Desenha os arcos primeiro
-    grafo.vertices.forEach(vertice => {
-        vertice.adjacentes.forEach((outro) => {
-            drawArco(vertice, outro);
+    // Desenha todos os arcos fora do caminho primeiro
+    let arcosCaminho = [];
+    grafo.vertices.forEach(v1 => {
+        v1.adjacentes.forEach(v2 => {
+            if (!encontrado || buscaCompleta || noCaminho(caminho, v1, v2)) {
+                // Enfileira o arco para ser desenhado mais tarde
+                arcosCaminho.push({v1: v1, v2: v2});
+            }
+            else {
+                drawArco(v1, v2, false);
+            }
         });
     });
-    // E depois os vértices por cima
+    // Depois os arcos que fazem parte do caminho por cima
+    arcosCaminho.forEach(par => {
+        drawArco(par.v1, par.v2, true);
+    });
+    // E finalmente os vértices
     grafo.vertices.forEach(vertice => {
         drawVertice(vertice);
     });
