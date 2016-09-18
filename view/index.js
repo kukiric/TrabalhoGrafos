@@ -14,18 +14,18 @@ window.addEventListener("resize", event => {
 });
 
 function grafoSelecionado(grafo) {
-    let select = $("#botoes select");
-    select.empty();
+    let selects = $("#grafo_v1, #grafo_v2");
+    selects.empty();
     if (grafo != null) {
         $("#grafo_v2").append($("<option></option>").attr("value", "null").text("Indefinido"));
         grafo.vertices.forEach(vertice => {
-            select.append($("<option></option").attr("value", vertice.nome).text(vertice.nome));
+            selects.append($("<option></option").attr("value", vertice.nome).text(vertice.nome));
         });
     }
     $("#botao_dfs, #botao_bfs, #botao_conexo, #grafo_v1, #grafo_v2").each(function() {
         $(this).prop("disabled", grafo == null);
     });
-    select.material_select();
+    selects.material_select();
 }
 grafoSelecionado(null);
 
