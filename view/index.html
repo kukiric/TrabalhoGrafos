@@ -28,14 +28,13 @@
             </div>
             <button type="button" id="botao_dfs" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="buscar(grafos.buscaDFS);">Realizar busca DFS <em>(depth-first)</em></button>
             <button type="button" id="botao_bfs" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="buscar(grafos.buscaBFS);">Realizar busca BFS <em>(breadth-first)</em></button>
-            <button type="button" id="botao_conexo" class="fluid spaced waves-effect waves-light blue btn" disabled onclick="testeIsConexo();">Testar conectividade</button>
-            <ul class="collection with-header" style="overflow: auto">
+            <ul class="collection with-header">
                 <li class="collection-header"><span class="titulo">Características do grafo</span></li>
-                <li class="collection-item">Vértices: 0</li>
-                <li class="collection-item">Arestas: 0</li>
-                <li class="collection-item">Direcionado: Sim</li>
-                <li class="collection-item">Ponderado: Sim</li>
-                <li class="collection-item">Conexo: Sim</li>
+                <li class="collection-item">Vértices <span id="grafo_vertices" class="secondary-content">0</span></li>
+                <li class="collection-item">Arcos/Arestas <span id="grafo_arcos" class="secondary-content">0</span></li>
+                <li class="collection-item">Direcionado <span id="grafo_direcionado" class="secondary-content">?</span></li>
+                <li class="collection-item">Ponderado <span id="grafo_ponderado" class="secondary-content">?</span></li>
+                <li class="collection-item">Conexo <span id="grafo_conexo" class="secondary-content">?</span></li>
             </ul>
             <div class="vazio flex"></div>
             <button type="button" class="last fluid spaced waves-effect waves-light blue btn" onclick="devTools();">Abrir dev tools</button>
