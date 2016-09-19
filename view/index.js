@@ -24,7 +24,7 @@ function grafoSelecionado(grafo) {
         });
     }
     // Ativa os botões do menu
-    $("#botao_dfs, #botao_bfs, #botao_conexo, #grafo_v1, #grafo_v2").each(function() {
+    $("#botao_dfs, #botao_bfs, #botao_dijkstra, #botao_conexo, #grafo_v1, #grafo_v2").each(function() {
         $(this).prop("disabled", grafo == null);
     });
     selects.material_select();

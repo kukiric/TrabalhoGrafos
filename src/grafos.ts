@@ -33,6 +33,11 @@ export class Vertice {
         return this.arcos.map(adj => adj.destino).sort((a, b) => a.compare(b));
     }
 
+    // Retorna os vértices adjacentes e seus pesos
+    public get pesoAdjacentes(): {v: Vertice, p: number}[] {
+        return this.arcos.map(adj => ({v: adj.destino, p: adj.peso})).sort((a, b) => a.v.compare(b.v));
+    }
+
     // Compara igualdade
     public equals(v2: Vertice) {
         return this != null && v2 != null && this.id === v2.id;
@@ -289,6 +294,60 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
     }
     // E retorna o resultado
     return new ResultadoBusca(inicial, procurado || null, visitados, caminho || [], encontrado);
+}
+
+class CorrenteDijkstra {
+    constructor(public vertice: Vertice, public distancia: number, public antecedente: CorrenteDijkstra) {}
+
+    public caminhoAteRaiz(): Vertice[] {
+        let cadeia: CorrenteDijkstra = this;
+        let caminho = new Array<Vertice>();
+        while (cadeia.antecedente != null) {
+            cadeia = cadeia.antecedente;
+            caminho.unshift(cadeia.vertice);
+        }
+        return caminho;
+    }
+}
+
+export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], tabela?: CorrenteDijkstra[], laço?: CorrenteDijkstra) : ResultadoBusca {
+    if (visitados == null) {
+        visitados = new Array<Vertice>();
+        visitados.push(inicial);
+    }
+    if (laço == null) {
+        laço = new CorrenteDijkstra(inicial, 0, null);
+    }
+    if (tabela == null) {
+        tabela = new Array<CorrenteDijkstra>();
+        tabela.push(laço);
+    }
+    inicial.pesoAdjacentes.forEach(adjacente => {
+        // Não repete os visitados
+        if (!visitados.find(outro => outro.equals(adjacente.v))) {
+            visitados.push(adjacente.v);
+            let distancia = laço.distancia + adjacente.p;
+            let proxLaço = tabela.find(elemento => elemento.vertice.equals(adjacente.v));
+            // Cria um novo elemento na tabela
+            if (proxLaço == null) {
+                proxLaço = new CorrenteDijkstra(adjacente.v, distancia, laço);
+                tabela.push(proxLaço);
+            }
+            // Verifica se esse pode ser o menor caminho até o vértice
+            if (distancia <= proxLaço.distancia) {
+                proxLaço.distancia = distancia;
+                proxLaço.antecedente = laço;
+                let proxTabela = tabela.slice(0);
+                let resultado = buscaDijkstra(adjacente.v, procurado, visitados, proxTabela, proxLaço);
+                if (resultado.encontrado) {
+                    tabela = proxTabela;
+                }
+            }
+        }
+    });
+    let encontrado = tabela.find(elemento => elemento.vertice.equals(procurado)) != null;
+    let caminho = encontrado ? laço.caminhoAteRaiz() : [];
+    return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado);
 }
 
 /////////////////////////
