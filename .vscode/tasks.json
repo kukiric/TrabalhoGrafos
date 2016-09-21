@@ -7,11 +7,11 @@
     "showOutput": "always",
     "tasks": [
         {
-            "taskName": "tsc",
+            "taskName": "compile",
             "suppressTaskName": true,
             "args": [
                 "run",
-                "tsc"
+                "compile"
             ],
             "isBuildCommand": true
         },

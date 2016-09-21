@@ -1,0 +1,11 @@
+{
+  "name": "trabalho-grafos",
+  "dependencies": {},
+  "globalDependencies": {
+    "github-electron": "registry:dt/github-electron#1.3.6+20160919065650",
+    "jquery": "registry:dt/jquery#1.10.0+20160908203239",
+    "materialize-css": "registry:dt/materialize-css#0.97.5+20160628040906",
+    "node": "registry:dt/node#6.0.0+20160920093002",
+    "xml2js": "registry:dt/xml2js#0.0.0+20160317120654"
+  }
+}

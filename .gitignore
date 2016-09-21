@@ -1,4 +1,6 @@
+bower_modules/
 node_modules/
+typings/
 src/*.js.map
 src/*.js
 tests/*.js.map

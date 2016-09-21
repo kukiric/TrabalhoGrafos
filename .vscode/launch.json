@@ -9,7 +9,7 @@
             "stopOnEntry": false,
             "args": [],
             "cwd": "${workspaceRoot}",
-            "preLaunchTask": "tsc",
+            "preLaunchTask": "compile",
             "runtimeExecutable": "${workspaceRoot}/node_modules/electron-prebuilt/dist/electron",
             "runtimeArgs": [
                 "--nolazy"
