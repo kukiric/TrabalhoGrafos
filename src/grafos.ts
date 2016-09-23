@@ -263,7 +263,7 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         fila = new Array<CadeiaBFS>();
         fila.push(cadeia);
     }
-    let caminho;
+    let caminho : Vertice[];
     let encontrado = inicial.equals(procurado);
     if (!encontrado) {
         encontrado = inicial.adjacentes.some(adjacente => {
@@ -367,7 +367,7 @@ export function importarXML(caminho: string): Grafo {
         grafo.ponderado = (grafoXml.$.ponderado === "true");
         grafo.dirigido = (grafoXml.$.dirigido === "true");
         // Grava os vértices do grafo
-        grafoXml.Vertices[0].Vertice.forEach(function(v) {
+        grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
             let idVertice = parseInt(v.$.relId);
             let rotulo = v.$.rotulo;
             let posicao = {x: parseInt(v.$.posX), y: parseInt(v.$.posY)};
@@ -375,7 +375,7 @@ export function importarXML(caminho: string): Grafo {
             grafo.vertices.push(vertice);
         });
         // Grava as arestas do grafo
-        grafoXml.Arestas[0].Aresta.forEach(function(a) {
+        grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
             let origem = parseInt(a.$.idVertice1);
             let destino = parseInt(a.$.idVertice2);
             let peso = parseFloat(a.$.peso);
