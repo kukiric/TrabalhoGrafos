@@ -34,7 +34,7 @@ export class Vertice {
     }
 
     // Retorna os vértices adjacentes e seus pesos
-    public get pesoAdjacentes(): {v: Vertice, p: number}[] {
+    public get adjacentesComPesos(): {v: Vertice, p: number}[] {
         return this.arcos.map(adj => ({v: adj.destino, p: adj.peso})).sort((a, b) => a.v.compare(b.v));
     }
 
@@ -188,19 +188,14 @@ export class GrafoAciclico {
 /////////////////////////
 
 export class ResultadoBusca {
-    inicial: Vertice;
-    procurado: Vertice;
-    visitados: Vertice[];
-    caminho: Vertice[];
-    encontrado: boolean;
-
-    constructor(inicial: Vertice, procurado: Vertice, visitados: Vertice[], caminho: Vertice[], encontrado: boolean) {
-        this.inicial = inicial;
-        this.procurado = procurado;
-        this.visitados = visitados;
-        this.caminho = caminho;
-        this.encontrado = encontrado;
-    }
+    constructor (
+        public inicial: Vertice,
+        public procurado: Vertice,
+        public visitados: Vertice[],
+        public caminho: Vertice[],
+        public encontrado: boolean,
+        public distancia: number
+    ) {}
 }
 
 export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], caminho?: Vertice[]): ResultadoBusca {
@@ -230,7 +225,7 @@ export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         caminho.unshift(inicial);
     }
     // Retorna os resultados da busca
-    return new ResultadoBusca(inicial, procurado || null, visitados, caminho, encontrado);
+    return new ResultadoBusca(inicial, procurado || null, visitados, caminho, encontrado, -1);
 }
 
 // Estrutura privada do BFS
@@ -263,7 +258,7 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         fila = new Array<CadeiaBFS>();
         fila.push(cadeia);
     }
-    let caminho : Vertice[];
+    let caminho: Vertice[];
     let encontrado = inicial.equals(procurado);
     if (!encontrado) {
         encontrado = inicial.adjacentes.some(adjacente => {
@@ -293,7 +288,7 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         }
     }
     // E retorna o resultado
-    return new ResultadoBusca(inicial, procurado || null, visitados, caminho || [], encontrado);
+    return new ResultadoBusca(inicial, procurado || null, visitados, caminho || [], encontrado, -1);
 }
 
 class CorrenteDijkstra {
@@ -302,6 +297,7 @@ class CorrenteDijkstra {
     public caminhoAteRaiz(): Vertice[] {
         let cadeia: CorrenteDijkstra = this;
         let caminho = new Array<Vertice>();
+        caminho.unshift(cadeia.vertice);
         while (cadeia.antecedente != null) {
             cadeia = cadeia.antecedente;
             caminho.unshift(cadeia.vertice);
@@ -310,44 +306,49 @@ class CorrenteDijkstra {
     }
 }
 
-export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], tabela?: CorrenteDijkstra[], laço?: CorrenteDijkstra) : ResultadoBusca {
-    if (visitados == null) {
-        visitados = new Array<Vertice>();
-        visitados.push(inicial);
+export function buscaDijkstra(inicial: Vertice, procurado?: Vertice): ResultadoBusca {
+    // Retorna imediatamente se o vértice final for o mesmo que o inicial
+    if (inicial.equals(procurado)) {
+        return new ResultadoBusca(inicial, procurado, [inicial], [inicial], true, 0);
     }
-    if (laço == null) {
-        laço = new CorrenteDijkstra(inicial, 0, null);
-    }
-    if (tabela == null) {
-        tabela = new Array<CorrenteDijkstra>();
-        tabela.push(laço);
-    }
-    inicial.pesoAdjacentes.forEach(adjacente => {
-        // Não repete os visitados
-        if (!visitados.find(outro => outro.equals(adjacente.v))) {
-            visitados.push(adjacente.v);
-            let distancia = laço.distancia + adjacente.p;
+    let visitados = new Array<Vertice>();
+    visitados.push(inicial);
+    let raiz = new CorrenteDijkstra(inicial, 0, null);
+    let tabela = new Array<CorrenteDijkstra>();
+    let fila = new Array<CorrenteDijkstra>();
+    tabela.push(raiz);
+    fila.push(raiz);
+    while (fila.length > 0) {
+        let atual = fila[0];
+        atual.vertice.adjacentesComPesos.forEach(adjacente => {
+            // Grava o elemento se essa fora a primeira visita
+            if (!visitados.find(outro => outro.equals(adjacente.v))) {
+                visitados.push(adjacente.v);
+            }
+            // Calcula a distância total até esse vértice
+            let distancia = atual.distancia + adjacente.p;
+            // Procura o próximo laço adjacente na tabela
             let proxLaço = tabela.find(elemento => elemento.vertice.equals(adjacente.v));
-            // Cria um novo elemento na tabela
+            // Cria um novo elemento na tabela se ele não foi visitado ainda
             if (proxLaço == null) {
-                proxLaço = new CorrenteDijkstra(adjacente.v, distancia, laço);
+                proxLaço = new CorrenteDijkstra(adjacente.v, distancia, raiz);
                 tabela.push(proxLaço);
             }
             // Verifica se esse pode ser o menor caminho até o vértice
             if (distancia <= proxLaço.distancia) {
                 proxLaço.distancia = distancia;
-                proxLaço.antecedente = laço;
-                let proxTabela = tabela.slice(0);
-                let resultado = buscaDijkstra(adjacente.v, procurado, visitados, proxTabela, proxLaço);
-                if (resultado.encontrado) {
-                    tabela = proxTabela;
-                }
+                proxLaço.antecedente = atual;
+                fila.push(proxLaço);
             }
-        }
-    });
-    let encontrado = tabela.find(elemento => elemento.vertice.equals(procurado)) != null;
-    let caminho = encontrado ? laço.caminhoAteRaiz() : [];
-    return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado);
+        });
+        // E depois remove o primeiro vértice da fila
+        fila.shift();
+    }
+    let verticeFinal = tabela.find(elemento => elemento.vertice.equals(procurado));
+    let encontrado = verticeFinal != null;
+    let caminho = encontrado ? verticeFinal.caminhoAteRaiz() : [];
+    let distancia = encontrado ? verticeFinal.distancia :  Infinity;
+    return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancia);
 }
 
 /////////////////////////

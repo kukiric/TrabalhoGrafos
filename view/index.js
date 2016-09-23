@@ -72,7 +72,7 @@ function chamarBusca(verticeInicial, verticeFinal, algoritmo) {
     caminho = resultado.caminho;
     buscaCompleta = false;
     $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
-    alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (encontrado ? "Sim" : "Não"));
+    alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (encontrado ? "Sim" : "Não") + "\nDistância (se Dijkstra): " + resultado.distancia);
     desenhaGrafo(grafo);
 }
 
@@ -205,7 +205,7 @@ function desenhaGrafo(grafo) {
         contexto.font = "12px sans-serif";
         contexto.fillText(vertice.nome, x, y + 4);
     }
-    function drawArco(v1, v2, destaque) {
+    function drawArco(v1, v2, peso, destaque) {
         let x1 = centroCanvas.x + v1.posicao.x - centroGrafo.x;
         let y1 = centroCanvas.y + v1.posicao.y - centroGrafo.y;
         let x2 = centroCanvas.x + v2.posicao.x - centroGrafo.x;
@@ -235,23 +235,28 @@ function desenhaGrafo(grafo) {
         if (grafo.dirigido) {
             canvas_arrow(contexto, x1, y1, x2, y2);
         }
+        if (grafo.ponderado) {
+            contexto.fillStyle = "red";
+            contexto.font = "12px sans-serif";
+            contexto.fillText(peso, (x1 + x2) / 2, (y1 + y2) / 2);
+        }
     }
     // Desenha todos os arcos fora do caminho primeiro
     let arcosCaminho = [];
     grafo.vertices.forEach(v1 => {
-        v1.adjacentes.forEach(v2 => {
-            if (!encontrado || buscaCompleta || noCaminho(caminho, v1, v2)) {
+        v1.adjacentesComPesos.forEach(v2_peso => {
+            if (!encontrado || buscaCompleta || noCaminho(caminho, v1, v2_peso.v)) {
                 // Enfileira o arco para ser desenhado mais tarde
-                arcosCaminho.push({v1: v1, v2: v2});
+                arcosCaminho.push({v1: v1, v2: v2_peso.v, peso: v2_peso.p});
             }
             else {
-                drawArco(v1, v2, false);
+                drawArco(v1, v2_peso.v, v2_peso.p, false);
             }
         });
     });
     // Depois os arcos que fazem parte do caminho por cima
     arcosCaminho.forEach(par => {
-        drawArco(par.v1, par.v2, true);
+        drawArco(par.v1, par.v2, par.peso, true);
     });
     // E finalmente os vértices
     grafo.vertices.forEach(vertice => {
