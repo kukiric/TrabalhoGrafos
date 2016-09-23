@@ -236,10 +236,22 @@ function desenhaGrafo(grafo) {
         if (grafo.dirigido) {
             canvas_arrow(contexto, x1, y1, x2, y2);
         }
+        // E o peso da aresta somente se o grafo for ponderado
         if (grafo.ponderado) {
-            contexto.fillStyle = "red";
+            let centro = {
+                x: (x1 + x2) / 2,
+                y: (y1 + y2) / 2 + 4
+            };
+            let w = contexto.measureText(peso).width + 4;
+            let h = 16;
+            let x = centro.x - w / 2;
+            let y = centro.y - h / 2 - 4;
+            contexto.fillStyle = "white";
+            contexto.fillRect(x, y, w, h);
+            contexto.fillStyle = destaque ? "black" : "lightgray";
             contexto.font = "12px sans-serif";
-            contexto.fillText(peso, (x1 + x2) / 2, (y1 + y2) / 2);
+            contexto.textAlign = "center";
+            contexto.fillText(peso, centro.x, centro.y);
         }
     }
     // Desenha todos os arcos fora do caminho primeiro
