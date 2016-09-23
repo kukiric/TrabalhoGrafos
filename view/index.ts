@@ -1,19 +1,38 @@
-const electron = require("electron");
-const grafos = require("../src/grafos");
-require("jquery");
+import * as electron from "electron";
+import * as grafos from "../src/grafos";
+import * as $ from "jquery";
 
-const contexto = document.getElementById("grafo").getContext("2d");
+// Tipos comuns
+type Vertice = grafos.Vertice;
+type Arco = grafos.Arco;
+type Grafo = grafos.Grafo;
+type FuncaoBusca = grafos.FuncaoBusca;
+
+const contexto = (document.getElementById("grafo") as HTMLCanvasElement).getContext("2d");
 let buscaCompleta = false;
 let encontrado = false;
-let percorridos;
-let caminho;
-let grafo;
+let percorridos: string[];
+let caminho: Vertice[];
+let grafo: Grafo;
 
-window.addEventListener("resize", event => {
+// Eventos do HTML
+$(window).on("resize", event => {
     desenhaGrafo(grafo);
 });
 
-function grafoSelecionado(grafo) {
+$("#botao_dfs").on("click", () => {
+    buscar(grafos.buscaDFS);
+});
+
+$("#botao_bfs").on("click", () => {
+    buscar(grafos.buscaBFS);
+});
+
+$("#botao_dijkstra").on("click", () => {
+    buscar(grafos.buscaDijkstra);
+});
+
+function grafoSelecionado(grafo: Grafo) {
     // Preenche as opções da busca
     let selects = $("#grafo_v1, #grafo_v2");
     selects.empty();
@@ -56,7 +75,7 @@ function devTools() {
     electron.remote.getCurrentWebContents().toggleDevTools();
 }
 
-function chamarBusca(verticeInicial, verticeFinal, algoritmo) {
+function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: FuncaoBusca) {
     let v1 = grafo.getVerticePorNome(verticeInicial);
     let v2 = grafo.getVerticePorNome(verticeFinal);
     if (v1 == null) {
@@ -77,21 +96,21 @@ function chamarBusca(verticeInicial, verticeFinal, algoritmo) {
     desenhaGrafo(grafo);
 }
 
-function chamarBuscaCompleta(verticeInicial, algoritmo) {
+function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
     let v1 = grafo.getVerticePorNome(verticeInicial);
     if (v1 == null) {
         alert("O vértice " + verticeInicial + " não existe no grafo!");
         return;
     }
-    let visitados = [];
+    let visitados = new Array<Vertice>();
     // Percorre o grafo até todos os vértices terem sidos visistados, até os não conexos
     while (true) {
         visitados.push(v1);
         let resultado = algoritmo(v1, null, visitados);
-        visistados = visitados.concat(resultado.visistados); 
+        visitados = visitados.concat(resultado.visitados);
         // Busca o próximo vértice não visitado
         let completo = grafo.vertices.every(vertice => {
-            if (visistados.find(visistado => vertice.equals(visistado))) {
+            if (visitados.find(visistado => vertice.equals(visistado))) {
                 return true;
             }
             else {
@@ -113,10 +132,10 @@ function chamarBuscaCompleta(verticeInicial, algoritmo) {
     desenhaGrafo(grafo);
 }
 
-function buscar(algoritmo) {
+function buscar(algoritmo: FuncaoBusca) {
     if (grafo != null) {
-        let v1 = document.getElementById("grafo_v1").value;
-        let v2 = document.getElementById("grafo_v2").value;
+        let v1 = $("#grafo_v1").val();
+        let v2 = $("#grafo_v2").val();
         // Não alterar, o valor do null é representado em string no DOM
         if (v2 !== "null") {
             chamarBusca(v1, v2, algoritmo);
@@ -136,7 +155,7 @@ function limparBusca() {
     desenhaGrafo(grafo);
 }
 
-function centro(elementos, getx, gety) {
+function centro(elementos: any[], getx: (el: any) => number, gety: (el: any) => number) {
     let minX = getx(elementos[0]), minY = gety(elementos[0]);
     let maxX = minX, maxY = minY;
     elementos.slice(1).forEach(elemento => {
@@ -152,7 +171,7 @@ function centro(elementos, getx, gety) {
 // Função adaptada do StackOverflow
 // Usuário: http://stackoverflow.com/users/796329/titus-cieslewski
 // Postagem: http://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag/6333775#6333775
-function canvas_arrow(context, fromx, fromy, tox, toy) {
+function canvas_arrow(context: CanvasRenderingContext2D, fromx: number, fromy: number, tox: number, toy: number) {
     const headlen = 10; // length of head in pixels
     const arrowangle = 6; // 360 degrees divided by this = actual angle
     const angle = Math.atan2(toy - fromy, tox - fromx);
@@ -163,14 +182,14 @@ function canvas_arrow(context, fromx, fromy, tox, toy) {
     context.fill();
 }
 
-function noCaminho(caminho, v1, v2) {
+function noCaminho(caminho: Vertice[], v1: Vertice, v2: Vertice) {
     // Retorna se o v2 encontra-se após o v1 no caminho
     return caminho.slice(0, caminho.length - 1).find((v, indice) => v.equals(v1) && v2.equals(caminho[indice+1])) != null;
 }
 
-function desenhaGrafo(grafo) {
+function desenhaGrafo(grafo: Grafo) {
     const raioVertice = 16;
-    const larguraLinha = 2;    
+    const larguraLinha = 2;
     contexto.canvas.width = contexto.canvas.scrollWidth;
     contexto.canvas.height = contexto.canvas.scrollHeight;
     contexto.clearRect(0, 0, contexto.canvas.width, contexto.canvas.height);
@@ -181,13 +200,13 @@ function desenhaGrafo(grafo) {
     let centroCanvas = {x: contexto.canvas.width / 2, y: contexto.canvas.height / 2};
     let centroGrafo = centro(grafo.vertices, (v) => v.posicao.x, (v) => v.posicao.y);
     // Funções de desenho no canvas
-    function drawVertice(vertice) {
+    function drawVertice(vertice: Vertice) {
         let x = centroCanvas.x + vertice.posicao.x - centroGrafo.x;
         let y = centroCanvas.y + vertice.posicao.y - centroGrafo.y;
         contexto.beginPath();
         contexto.lineWidth = larguraLinha * 2;
         contexto.strokeStyle = "black";
-        contexto.arc(x, y, raioVertice, 0, 2*Math.PI);
+        contexto.arc(x, y, raioVertice, 0, 2 * Math.PI);
         contexto.stroke();
         // Pinta os vértices do caminho encontrado em um destaque, e os outros percorridos em outro
         if (buscaCompleta || caminho.find(outroVertice => vertice.equals(outroVertice))) {
@@ -206,7 +225,7 @@ function desenhaGrafo(grafo) {
         contexto.font = "12px sans-serif";
         contexto.fillText(vertice.nome, x, y + 4);
     }
-    function drawArco(v1, v2, peso, destaque) {
+    function drawArco(v1: Vertice, v2: Vertice, peso: number, destacar: boolean) {
         let x1 = centroCanvas.x + v1.posicao.x - centroGrafo.x;
         let y1 = centroCanvas.y + v1.posicao.y - centroGrafo.y;
         let x2 = centroCanvas.x + v2.posicao.x - centroGrafo.x;
@@ -219,7 +238,7 @@ function desenhaGrafo(grafo) {
         x2 -= distancia * Math.cos(angulo);
         y2 -= distancia * Math.sin(angulo);
         // Pinta as arestas que fazem parte do caminho em destaque
-        if (destaque) {
+        if (destacar) {
             contexto.strokeStyle = "black";
             contexto.fillStyle = "black";
         }
@@ -242,20 +261,25 @@ function desenhaGrafo(grafo) {
                 x: (x1 + x2) / 2,
                 y: (y1 + y2) / 2 + 4
             };
-            let w = contexto.measureText(peso).width + 4;
+            let w = contexto.measureText(peso.toString()).width + 4;
             let h = 16;
             let x = centro.x - w / 2;
             let y = centro.y - h / 2 - 4;
             contexto.fillStyle = "white";
             contexto.fillRect(x, y, w, h);
-            contexto.fillStyle = destaque ? "black" : "lightgray";
+            contexto.fillStyle = destacar ? "black" : "lightgray";
             contexto.font = "12px sans-serif";
             contexto.textAlign = "center";
-            contexto.fillText(peso, centro.x, centro.y);
+            contexto.fillText(peso.toString(), centro.x, centro.y);
         }
     }
     // Desenha todos os arcos fora do caminho primeiro
-    let arcosCaminho = [];
+    type ArcoCaminho = {
+        v1: Vertice,
+        v2: Vertice,
+        peso: number
+    };
+    let arcosCaminho = new Array<ArcoCaminho>();
     grafo.vertices.forEach(v1 => {
         v1.adjacentesComPesos.forEach(v2_peso => {
             if (!encontrado || buscaCompleta || noCaminho(caminho, v1, v2_peso.v)) {

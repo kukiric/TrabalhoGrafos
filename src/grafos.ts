@@ -351,6 +351,8 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice): ResultadoB
     return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancia);
 }
 
+export type FuncaoBusca = (inicial: Vertice, procurado?: Vertice, Visitados?: Vertice[]) => ResultadoBusca;
+
 /////////////////////////
 // Métodos utilitários //
 /////////////////////////
