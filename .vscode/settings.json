@@ -11,5 +11,6 @@
         "**/*.map": true,
         ".vscode/.*": true,
         "node_modules/": true
-    }
+    },
+    "typescript.tsdk": "node_modules/typescript/lib"
 }
