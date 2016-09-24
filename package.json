@@ -2,6 +2,7 @@
   "name": "trabalho-grafos",
   "version": "1.2.0",
   "description": "Trabalho de Grafos",
+  "private": true,
   "contributors": [
     {
       "name": "Marcelo Leonardo de Souza",
