@@ -1,6 +1,5 @@
-import electron = require("electron");
-import util = require("util");
-import grafos = require("./grafos");
+import * as electron from "electron";
+import * as grafos from "./grafos";
 
 let janela: Electron.BrowserWindow;
 

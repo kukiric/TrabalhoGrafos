@@ -1,5 +1,5 @@
-import xml2js = require("xml2js");
-import fs = require("fs");
+import * as xml from "xml2js";
+import * as fs from "fs";
 
 ///////////////////////////
 // Estruturas de cálculo //
@@ -360,7 +360,7 @@ export type FuncaoBusca = (inicial: Vertice, procurado?: Vertice, Visitados?: Ve
 export function importarXML(caminho: string): Grafo {
     let arquivo = fs.readFileSync(caminho);
     let grafo: Grafo = null;
-    xml2js.parseString(arquivo.toString(), function(erro, dados) {
+    xml.parseString(arquivo.toString(), function(erro, dados) {
         if (erro != null) {
             console.error(erro);
         }
