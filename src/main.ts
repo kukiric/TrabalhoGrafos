@@ -11,10 +11,6 @@ electron.app.on("ready", () => {
     // Exibe a janela na primeira vez que a página terminar de carregar
     janela.webContents.on("did-finish-load", () => {
         janela.webContents.removeAllListeners("did-finish-load");
-        // Abre as ferramentas de desenvolvimento em modo debug
-        if (process.env.NODE_ENV === "development") {
-            janela.webContents.openDevTools();
-        }
         janela.maximize();
     });
 

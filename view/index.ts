@@ -40,7 +40,9 @@ $("#botao_limpar").on("click", () => {
 });
 
 $("#botao_info").on("click", () => {
-    abrirModalResultadoBusca();
+    if (busca) {
+        $("#modal_caminho").openModal();
+    }
 });
 
 $("#botao_dfs").on("click", () => {
@@ -98,8 +100,6 @@ function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: Fu
     }
     buscaCompleta = false;
     busca = algoritmo(v1, v2);
-    let percorridos = busca.visitados.map(vertice => vertice.nome);
-    alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (busca.encontrado ? "Sim" : "Não") + "\nDistância (se Dijkstra): " + busca.distancia);
 }
 
 function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
@@ -132,8 +132,6 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
             break;
         }
     }
-    let percorridos = busca.visitados.map(vertice => vertice.nome);
-    alert("Vértices percorridos a partir de " + verticeInicial + " (busca completa): [" + percorridos.join(", ") + "]");
 }
 
 function buscar(algoritmo: FuncaoBusca) {
@@ -149,6 +147,7 @@ function buscar(algoritmo: FuncaoBusca) {
         }
         $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
         $("#botao_info").removeClass("disabled").addClass("waves-effect");
+        atualizarModalBusca();
         desenhaGrafo(contexto, grafo, busca, buscaCompleta);
     }
 }
@@ -163,9 +162,14 @@ function limparBusca() {
     desenhaGrafo(contexto, grafo, busca, buscaCompleta);
 }
 
-function abrirModalResultadoBusca() {
+function atualizarModalBusca() {
     if (busca) {
-        $("#modal_caminho").openModal();
+        $("#busca_nome").text(busca.nome);
+        $("#busca_v1").text(busca.inicial.nome);
+        $("#busca_v2").text(busca.procurado ? busca.procurado.nome : "Todos");
+        $("#busca_visitados").text(busca.visitados.map(v => v.nome).join(" > "));
+        $("#busca_caminho").text(busca.caminho.map(v => v.nome).join(" > "));
+        $("#busca_custo").text(busca.distancia >= 0 ? "Custo: " + busca.distancia : "");
     }
 }
 
