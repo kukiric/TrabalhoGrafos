@@ -1,10 +1,8 @@
 bower_modules/
 node_modules/
 typings/
-src/*.js.map
-src/*.js
-tests/*.js.map
-tests/*.js
-view/*.js.map
-view/*.js
+src/**/*.js.map
+src/**/*.js
+view/**/*.js.map
+view/**/*.js
 .vscode/.*

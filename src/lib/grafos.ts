@@ -187,6 +187,8 @@ export class GrafoAciclico {
 // Algorítmos de busca //
 /////////////////////////
 
+export type FuncaoBusca = (inicial: Vertice, procurado?: Vertice, Visitados?: Vertice[]) => ResultadoBusca;
+
 export class ResultadoBusca {
     constructor (
         public inicial: Vertice,
@@ -350,8 +352,6 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice): ResultadoB
     let distancia = encontrado ? verticeFinal.distancia :  Infinity;
     return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancia);
 }
-
-export type FuncaoBusca = (inicial: Vertice, procurado?: Vertice, Visitados?: Vertice[]) => ResultadoBusca;
 
 /////////////////////////
 // Métodos utilitários //

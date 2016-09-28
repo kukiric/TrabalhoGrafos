@@ -1,5 +1,5 @@
 import * as electron from "electron";
-import * as grafos from "./grafos";
+import * as grafos from "./lib/grafos";
 
 let janela: Electron.BrowserWindow;
 
