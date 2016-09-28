@@ -196,7 +196,8 @@ export class ResultadoBusca {
         public visitados: Vertice[],
         public caminho: Vertice[],
         public encontrado: boolean,
-        public distancia: number
+        public distancia: number,
+        public nome: string
     ) {}
 }
 
@@ -227,7 +228,7 @@ export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         caminho.unshift(inicial);
     }
     // Retorna os resultados da busca
-    return new ResultadoBusca(inicial, procurado || null, visitados, caminho, encontrado, -1);
+    return new ResultadoBusca(inicial, procurado || null, visitados, caminho, encontrado, -1, "DFS");
 }
 
 // Estrutura privada do BFS
@@ -290,7 +291,7 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         }
     }
     // E retorna o resultado
-    return new ResultadoBusca(inicial, procurado || null, visitados, caminho || [], encontrado, -1);
+    return new ResultadoBusca(inicial, procurado || null, visitados, caminho || [], encontrado, -1, "BFS");
 }
 
 class CorrenteDijkstra {
@@ -311,7 +312,7 @@ class CorrenteDijkstra {
 export function buscaDijkstra(inicial: Vertice, procurado?: Vertice): ResultadoBusca {
     // Retorna imediatamente se o vértice final for o mesmo que o inicial
     if (inicial.equals(procurado)) {
-        return new ResultadoBusca(inicial, procurado, [inicial], [inicial], true, 0);
+        return new ResultadoBusca(inicial, procurado, [inicial], [inicial], true, 0, "Dijkstra");
     }
     let visitados = new Array<Vertice>();
     visitados.push(inicial);
@@ -350,7 +351,7 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice): ResultadoB
     let encontrado = verticeFinal != null;
     let caminho = encontrado ? verticeFinal.caminhoAteRaiz() : [];
     let distancia = encontrado ? verticeFinal.distancia :  Infinity;
-    return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancia);
+    return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancia, "Dijkstra");
 }
 
 /////////////////////////

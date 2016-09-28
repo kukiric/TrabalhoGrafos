@@ -5,7 +5,7 @@ let janela: Electron.BrowserWindow;
 
 electron.app.on("ready", () => {
     // Cria a janela do navegador sem barra de menu
-    janela = new electron.BrowserWindow({title: "Grafos", show: false});
+    janela = new electron.BrowserWindow({show: false});
     janela.setMenu(null);
 
     // Exibe a janela na primeira vez que a página terminar de carregar

@@ -35,6 +35,14 @@ $("#botao_abrir").on("click", () => {
     electron.ipcRenderer.send("abrir-grafo", "set-grafo");
 });
 
+$("#botao_limpar").on("click", () => {
+    limparBusca();
+});
+
+$("#botao_info").on("click", () => {
+    abrirModalResultadoBusca();
+});
+
 $("#botao_dfs").on("click", () => {
     buscar(buscaDFS);
 });
@@ -91,9 +99,7 @@ function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: Fu
     buscaCompleta = false;
     busca = algoritmo(v1, v2);
     let percorridos = busca.visitados.map(vertice => vertice.nome);
-    $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
     alert("Vértices percorridos a partir de " + verticeInicial + ": [" + percorridos.join(", ") + "]\nVértice " + verticeFinal + " encontrado: " + (busca.encontrado ? "Sim" : "Não") + "\nDistância (se Dijkstra): " + busca.distancia);
-    desenhaGrafo(contexto, grafo, busca);
 }
 
 function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
@@ -102,15 +108,18 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
         alert("O vértice " + verticeInicial + " não existe no grafo!");
         return;
     }
-    let visitados = new Array<Vertice>();
+    limparBusca();
+    buscaCompleta = true;
+    busca = new ResultadoBusca(v1, null, new Array<Vertice>(), null, false, -1, "");
     // Percorre o grafo até todos os vértices terem sidos visistados, até os não conexos
     while (true) {
-        visitados.push(v1);
-        let resultado = algoritmo(v1, null, visitados);
-        visitados = visitados.concat(resultado.visitados);
+        busca.visitados.push(v1);
+        let resultado = algoritmo(v1, null, busca.visitados);
+        busca.nome = resultado.nome;
+        busca.visitados = resultado.visitados;
         // Busca o próximo vértice não visitado
         let completo = grafo.vertices.every(vertice => {
-            if (visitados.find(visistado => vertice.equals(visistado))) {
+            if (busca.visitados.find(visistado => vertice.equals(visistado))) {
                 return true;
             }
             else {
@@ -123,33 +132,41 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
             break;
         }
     }
-    limparBusca();
-    busca = null;
-    buscaCompleta = true;
-    let percorridos = visitados.map(vertice => vertice.nome);
-    $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
+    let percorridos = busca.visitados.map(vertice => vertice.nome);
     alert("Vértices percorridos a partir de " + verticeInicial + " (busca completa): [" + percorridos.join(", ") + "]");
-    desenhaGrafo(contexto, grafo, busca, buscaCompleta);
 }
 
 function buscar(algoritmo: FuncaoBusca) {
     if (grafo != null) {
         let v1 = $("#grafo_v1").val();
         let v2 = $("#grafo_v2").val();
-        // Não alterar, o valor do null é representado em string no DOM
+        // Não alterar, o valor do null é representado em string no HTML
         if (v2 !== "null") {
             chamarBusca(v1, v2, algoritmo);
         }
         else {
             chamarBuscaCompleta(v1, algoritmo);
         }
+        $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
+        $("#botao_info").removeClass("disabled").addClass("waves-effect");
+        desenhaGrafo(contexto, grafo, busca, buscaCompleta);
     }
 }
 
 function limparBusca() {
-    buscaCompleta = false;
-    $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
-    desenhaGrafo(contexto, grafo, null, false);
+    if (busca) {
+        busca = null;
+        buscaCompleta = false;
+        $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
+        $("#botao_info").addClass("disabled").removeClass("waves-effect");
+    }
+    desenhaGrafo(contexto, grafo, busca, buscaCompleta);
+}
+
+function abrirModalResultadoBusca() {
+    if (busca) {
+        $("#modal_caminho").openModal();
+    }
 }
 
 grafoCarregado(null);

@@ -1,5 +1,6 @@
 <head>
     <meta charset="UTF-8">
+    <title>Grafos</title>
     <link rel="stylesheet" type="text/css" href="../node_modules/materialize-css/dist/css/materialize.min.css">
     <link rel="stylesheet" type="text/css" href="../node_modules/material-design-icons-iconfont/dist/material-design-icons.css">
     <link rel="stylesheet" type="text/css" href="index.css">
@@ -9,9 +10,14 @@
 </head>
 <body>
     <canvas class="grafo" id="grafo"></canvas>
-    <a class="btn-floating waves-light orange disabled" id="botao_limpar" style="position: absolute; bottom: 16px; right: 416px;" href="#" onclick="limparBusca()">
+    <!-- Botões de ação -->
+    <a class="btn-floating waves-light orange disabled" id="botao_limpar" style="position: absolute; bottom: 16px; right: 464px;" href="#">
         <i class="material-icons">undo</i>
     </a>
+    <a class="btn-floating waves-light light-blue disabled" id="botao_info" style="position: absolute; bottom: 16px; right: 416px;" href="#">
+        <i class="material-icons">more_horiz</i>
+    </a>
+    <!-- Menu lateral -->
     <div class="menu z-depth-1">
         <div class="menu-flex" id="botoes">
             <button type="button" id="botao_abrir" class="fluid spaced waves-effect waves-light green btn">Abrir Grafo</button>
@@ -41,5 +47,27 @@
             <button type="button" id="botao_dev" class="last fluid spaced waves-effect waves-light blue btn";">Abrir dev tools</button>
         </div>
     </div>
+    <!-- Rodapé -->
     <div class="copyright">Trabalho de Grafos © 2016 Marcelo e Ricardo</div>
+    <!-- Detalhes da busca -->
+    <div id="modal_caminho" class="modal bottom-sheet">
+        <a href="#!" class="modal-close grey-text" style="position: absolute; top: 8px; right: 8px;">
+            <i class="material-icons">close</i>
+        </a>
+        <div class="modal-content">
+            <h4>Busca
+                <span id="busca_nome">Dijkstra</span>
+                (
+                <span id="busca_v1">A</span>
+                <i class="material-icons">arrow_forward</i>
+                <span id="busca_v2">F</span>
+                )
+            </h4>
+            <span class="titulo">Ordem dos vértices checados:</span><br>
+            <span id="busca_visitados">A > B > C > D > E > F</span><br>
+            <span class="titulo">Caminho encontrado:</span><br>
+            <span id="busca_caminho">A > C > D > F</span><br>
+            <span>Custo: 23.5</span>
+        </div>
+    </div>
 </body>
