@@ -170,6 +170,7 @@ function atualizarModalBusca() {
         $("#busca_visitados").text(busca.visitados.map(v => v.nome).join(" > "));
         $("#busca_caminho").text(busca.caminho.map(v => v.nome).join(" > "));
         $("#busca_custo").text(busca.distancia >= 0 ? "Custo: " + busca.distancia : "");
+        $("#modal_caminho").openModal();
     }
 }
 
