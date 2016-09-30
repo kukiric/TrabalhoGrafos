@@ -16,6 +16,7 @@ from "../src/lib/grafos";
 
 const contexto = (document.getElementById("grafo") as HTMLCanvasElement).getContext("2d");
 let buscaCompleta = false;
+let distancias: number[];
 let busca: ResultadoBusca;
 let grafo: Grafo;
 
@@ -98,6 +99,7 @@ function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: Fu
         alert("O vértice " + verticeFinal + " não existe no grafo!");
         return;
     }
+    distancias = null;
     buscaCompleta = false;
     busca = algoritmo(v1, v2);
 }
@@ -109,14 +111,22 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
         return;
     }
     limparBusca();
+    let conexo = true;
     buscaCompleta = true;
-    busca = new ResultadoBusca(v1, null, new Array<Vertice>(), null, false, -1, "");
+    busca = new ResultadoBusca(v1, null, new Array<Vertice>(), new Array<Vertice>(), false, new Array<number>(), "");
     // Percorre o grafo até todos os vértices terem sidos visistados, até os não conexos
     while (true) {
         busca.visitados.push(v1);
         let resultado = algoritmo(v1, null, busca.visitados);
         busca.nome = resultado.nome;
         busca.visitados = resultado.visitados;
+        // Só adiciona distâncias finitas enquanto a busca for conexa
+        if (conexo) {
+            busca.distancias = busca.distancias.concat(resultado.distancias);
+        }
+        else {
+            busca.distancias = busca.distancias.concat(resultado.distancias.map(d => -1));
+        }
         // Busca o próximo vértice não visitado
         let completo = grafo.vertices.every(vertice => {
             if (busca.visitados.find(visistado => vertice.equals(visistado))) {
@@ -124,6 +134,7 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
             }
             else {
                 v1 = vertice;
+                conexo = false;
                 return false;
             }
         });
@@ -155,6 +166,7 @@ function buscar(algoritmo: FuncaoBusca) {
 function limparBusca() {
     if (busca) {
         busca = null;
+        distancias = null;
         buscaCompleta = false;
         $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
         $("#botao_info").addClass("disabled").removeClass("waves-effect");
@@ -164,12 +176,17 @@ function limparBusca() {
 
 function atualizarModalBusca() {
     if (busca) {
+        let contemDistancias = busca.distancias.length > 0 && busca.distancias[0] >= 0;
         $("#busca_nome").text(busca.nome);
         $("#busca_v1").text(busca.inicial.nome);
         $("#busca_v2").text(busca.procurado ? busca.procurado.nome : "Todos");
-        $("#busca_visitados").text(busca.visitados.map(v => v.nome).join(" > "));
-        $("#busca_caminho").text(busca.caminho.map(v => v.nome).join(" > "));
-        $("#busca_custo").text(busca.distancia >= 0 ? "Custo: " + busca.distancia : "");
+        let visitados = contemDistancias
+            ? busca.visitados.map((v, i) => `${v.nome} (${busca.distancias[i] >= 0 ? busca.distancias[i] : "∞"})`)
+            : busca.visitados.map(v => v.nome);
+        $("#busca_visitados").text(visitados.join(" > "));
+        $("#busca_caminho").text(busca.caminho.length > 0 ? busca.caminho.map(v => v.nome).join(" > ") : "Nenhum");
+        let distanciaFinal = busca.encontrado ? busca.distancias[busca.visitados.findIndex(e => e.equals(busca.procurado))] : "-1";
+        $("#busca_custo").text(buscaCompleta || !contemDistancias ? "" : "Custo para o destino: " + (distanciaFinal >= 0 ? distanciaFinal.toString() : "∞"));
         $("#modal_caminho").openModal();
     }
 }

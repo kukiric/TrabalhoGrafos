@@ -196,7 +196,7 @@ export class ResultadoBusca {
         public visitados: Vertice[],
         public caminho: Vertice[],
         public encontrado: boolean,
-        public distancia: number,
+        public distancias: number[],
         public nome: string
     ) {}
 }
@@ -228,7 +228,8 @@ export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         caminho.unshift(inicial);
     }
     // Retorna os resultados da busca
-    return new ResultadoBusca(inicial, procurado || null, visitados, caminho, encontrado, -1, "DFS");
+    let distancias = visitados.map(v => -1);
+    return new ResultadoBusca(inicial, procurado || null, visitados, caminho, encontrado, distancias, "DFS");
 }
 
 // Estrutura privada do BFS
@@ -291,9 +292,11 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         }
     }
     // E retorna o resultado
-    return new ResultadoBusca(inicial, procurado || null, visitados, caminho || [], encontrado, -1, "BFS");
+    let distancias = visitados.map(v => -1);
+    return new ResultadoBusca(inicial, procurado || null, visitados, caminho || [], encontrado, distancias, "BFS");
 }
 
+// Estrutura privadas do Dijkstra
 class CorrenteDijkstra {
     constructor(public vertice: Vertice, public distancia: number, public antecedente: CorrenteDijkstra) {}
 
@@ -309,13 +312,15 @@ class CorrenteDijkstra {
     }
 }
 
-export function buscaDijkstra(inicial: Vertice, procurado?: Vertice): ResultadoBusca {
+export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): ResultadoBusca {
+    if (visitados == null) {
+        visitados = new Array<Vertice>();
+        visitados.push(inicial);
+    }
     // Retorna imediatamente se o vértice final for o mesmo que o inicial
     if (inicial.equals(procurado)) {
-        return new ResultadoBusca(inicial, procurado, [inicial], [inicial], true, 0, "Dijkstra");
+        return new ResultadoBusca(inicial, procurado, visitados, visitados, true, [0], "Dijkstra");
     }
-    let visitados = new Array<Vertice>();
-    visitados.push(inicial);
     let raiz = new CorrenteDijkstra(inicial, 0, null);
     let tabela = new Array<CorrenteDijkstra>();
     let fila = new Array<CorrenteDijkstra>();
@@ -324,7 +329,7 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice): ResultadoB
     while (fila.length > 0) {
         let atual = fila[0];
         atual.vertice.adjacentesComPesos.forEach(adjacente => {
-            // Grava o elemento se essa fora a primeira visita
+            // Adiciona vértices novos nos visitados
             if (!visitados.find(outro => outro.equals(adjacente.v))) {
                 visitados.push(adjacente.v);
             }
@@ -350,8 +355,8 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice): ResultadoB
     let verticeFinal = tabela.find(elemento => elemento.vertice.equals(procurado));
     let encontrado = verticeFinal != null;
     let caminho = encontrado ? verticeFinal.caminhoAteRaiz() : [];
-    let distancia = encontrado ? verticeFinal.distancia :  Infinity;
-    return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancia, "Dijkstra");
+    let distancias = tabela.map(v => v.distancia);
+    return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancias, "Dijkstra");
 }
 
 /////////////////////////

@@ -35,7 +35,7 @@ function isNoCaminho(caminho: Vertice[], v1: Vertice, v2: Vertice) {
 
 // (Re-)desenha um grafo no canvas
 export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, busca?: ResultadoBusca, buscaCompleta?: boolean) {
-    busca = busca || new ResultadoBusca(null, null, [], [], false, -1, "");
+    busca = busca || new ResultadoBusca(null, null, [], [], false, [], "");
     const raioVertice = 16;
     const larguraLinha = 2;
     contexto.canvas.width = contexto.canvas.scrollWidth;
