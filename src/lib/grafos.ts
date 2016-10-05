@@ -1,5 +1,4 @@
 import * as xml from "xml2js";
-import * as fs from "fs";
 
 ///////////////////////////
 // Estruturas de cálculo //
@@ -363,43 +362,46 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?:
 // Métodos utilitários //
 /////////////////////////
 
-export function importarXML(caminho: string): Grafo {
-    let arquivo = fs.readFileSync(caminho);
+export function importarXML(arquivo: File, retorno: (grafo: Grafo) => void): void {
     let grafo: Grafo = null;
-    xml.parseString(arquivo.toString(), function(erro, dados) {
-        if (erro != null) {
-            console.error(erro);
-        }
-        grafo = new Grafo();
-        let grafoXml = dados.Grafo;
-        // Grava as propriedades do grafo
-        grafo.ponderado = (grafoXml.$.ponderado === "true");
-        grafo.dirigido = (grafoXml.$.dirigido === "true");
-        // Grava os vértices do grafo
-        grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
-            let idVertice = parseInt(v.$.relId);
-            let rotulo = v.$.rotulo;
-            let posicao = {x: parseInt(v.$.posX), y: parseInt(v.$.posY)};
-            let vertice = new Vertice(idVertice, rotulo, posicao);
-            grafo.vertices.push(vertice);
-        });
-        // Grava as arestas do grafo
-        grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
-            let origem = parseInt(a.$.idVertice1);
-            let destino = parseInt(a.$.idVertice2);
-            let peso = parseFloat(a.$.peso);
-            let arco = new Arco(grafo.getVerticePorID(destino), peso);
-            grafo.getVerticePorID(origem).arcos.push(arco);
-            grafo.arcos.push(arco);
-            // Cria um arco simétrico se o grafo não for direcionado
-            if (grafo.dirigido === false) {
-                let arco2 = new Arco(grafo.getVerticePorID(origem), peso);
-                grafo.getVerticePorID(destino).arcos.push(arco2);
-                grafo.arcos.push(arco2);
+    let leitor = new FileReader();
+    leitor.onload = function(event: Event) {
+        xml.parseString(leitor.result, function(erro, dados) {
+            if (erro != null) {
+                console.error(erro);
             }
+            grafo = new Grafo();
+            let grafoXml = dados.Grafo;
+            // Grava as propriedades do grafo
+            grafo.ponderado = (grafoXml.$.ponderado === "true");
+            grafo.dirigido = (grafoXml.$.dirigido === "true");
+            // Grava os vértices do grafo
+            grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
+                let idVertice = parseInt(v.$.relId);
+                let rotulo = v.$.rotulo;
+                let posicao = {x: parseInt(v.$.posX), y: parseInt(v.$.posY)};
+                let vertice = new Vertice(idVertice, rotulo, posicao);
+                grafo.vertices.push(vertice);
+            });
+            // Grava as arestas do grafo
+            grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
+                let origem = parseInt(a.$.idVertice1);
+                let destino = parseInt(a.$.idVertice2);
+                let peso = parseFloat(a.$.peso);
+                let arco = new Arco(grafo.getVerticePorID(destino), peso);
+                grafo.getVerticePorID(origem).arcos.push(arco);
+                grafo.arcos.push(arco);
+                // Cria um arco simétrico se o grafo não for direcionado
+                if (grafo.dirigido === false) {
+                    let arco2 = new Arco(grafo.getVerticePorID(origem), peso);
+                    grafo.getVerticePorID(destino).arcos.push(arco2);
+                    grafo.arcos.push(arco2);
+                }
+            });
+            // Ordena os vértices
+            grafo.vertices.sort((a, b) => a.compare(b));
         });
-        // Ordena os vértices
-        grafo.vertices.sort((a, b) => a.compare(b));
-    });
-    return grafo;
+        retorno(grafo);
+    };
+    leitor.readAsText(arquivo, "UTF-8");
 }

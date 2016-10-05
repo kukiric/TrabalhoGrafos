@@ -1,12 +1,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Grafos</title>
-    <link rel="stylesheet" type="text/css" href="../node_modules/materialize-css/dist/css/materialize.min.css">
-    <link rel="stylesheet" type="text/css" href="../node_modules/material-design-icons-iconfont/dist/material-design-icons.css">
-    <link rel="stylesheet" type="text/css" href="index.css">
-    <script defer src="../node_modules/hammerjs/hammer.js"></script>
-    <script defer src="../node_modules/materialize-css/dist/js/materialize.min.js"></script>
-    <script defer src="index.js"></script>
+    <!-- Carrega uma versão antiga do JQuery no objeto window para compatibilidade com Materialize -->
+    <script src="jquery/jquery-2.2.4.min.js"></script>
 </head>
 <body>
     <canvas class="grafo" id="grafo"></canvas>
@@ -20,7 +16,7 @@
     <!-- Menu lateral -->
     <div class="menu z-depth-1">
         <div class="menu-flex" id="botoes">
-            <button type="button" id="botao_abrir" class="fluid spaced waves-effect waves-light green btn">Abrir Grafo</button>
+            <input type="file" id="input_grafo" class="fluid spaced waves-effect waves-light green btn">Abrir Grafo</input>
             <div class="vazio fixo"></div>
             <div class="input-field">
                 <select id="grafo_v1" disabled>
@@ -44,7 +40,6 @@
                 <li class="collection-item">Conexo <span id="grafo_conexo" class="secondary-content">?</span></li>
             </ul>
             <div class="vazio flex"></div>
-            <button type="button" id="botao_dev" class="last fluid spaced waves-effect waves-light blue btn";">Abrir dev tools</button>
         </div>
     </div>
     <!-- Rodapé -->
@@ -70,4 +65,5 @@
             <span class="titulo" id="busca_custo"></span>
         </div>
     </div>
+    <script src="bundle.js"></script>
 </body>
