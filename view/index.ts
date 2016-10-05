@@ -4,7 +4,7 @@ import "materialize-css/dist/css/materialize.css";
 import "./index.css";
 
 // Bibliotecas
-import "jquery";
+import "script!jquery";
 import "materialize-css";
 import {desenhaGrafo} from "../src/lib/drawing";
 import {
