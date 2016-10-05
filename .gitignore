@@ -5,4 +5,5 @@ src/**/*.js.map
 src/**/*.js
 view/**/*.js.map
 view/**/*.js
+!view/jquery/*.js
 .vscode/.*
