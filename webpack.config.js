@@ -10,7 +10,8 @@ module.exports = {
     loaders: [
       { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' },
       { test: /\.css$/, loader: "style-loader!css-loader" },
-      { test: /\.ts$/, loader: "ts-loader" }
+      { test: /\.ts$/, loader: "ts-loader" },
+      { test: /\.html$/, loader: "raw-loader" }
     ]
   },
   devServer: {
@@ -19,4 +20,4 @@ module.exports = {
   externals: {
     jquery: "jQuery"
   }
-}
+};
