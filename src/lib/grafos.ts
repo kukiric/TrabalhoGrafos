@@ -472,8 +472,14 @@ function importarXMLMatriz(mapa: any): Grafo {
     // Preenche a matriz
     for (let i = 0; i < linhas; i++) {
         for (let j = 0; j < colunas; j++) {
-            let vertice = new Vertice(id++, getNome(i, j), posTela(i, j), posReal(i, j));
-            vertices[indiceMatriz(i, j)] = vertice;
+            // Cria o vértice se não houver barreira nessa posição
+            if (!barreiras.find(p => p.x === i + 1 && p.y === j + 1)) {
+                let vertice = new Vertice(id++, getNome(i, j), posTela(i, j), posReal(i, j));
+                vertices[indiceMatriz(i, j)] = vertice;
+            }
+            else {
+                vertices[indiceMatriz(i, j)] = undefined;
+            }
         }
     }
 
@@ -481,19 +487,21 @@ function importarXMLMatriz(mapa: any): Grafo {
     for (let i = 0; i < linhas; i++) {
         for (let j = 0; j < colunas; j++) {
             let vertice = getVertice(i, j);
-            let vizinhos = getVizinhos(i, j);
-            vizinhos.forEach(vizinho => {
-                let a1 = new Arco(vizinho, 1);
-                let a2 = new Arco(vertice, 1);
-                vertice.arcos.push(a1);
-                vizinho.arcos.push(a2);
-                arcos.push(a1, a2);
-            });
+            if (vertice !== undefined) {
+                let vizinhos = getVizinhos(i, j);
+                vizinhos.forEach(vizinho => {
+                    let a1 = new Arco(vizinho, 1);
+                    let a2 = new Arco(vertice, 1);
+                    vertice.arcos.push(a1);
+                    vizinho.arcos.push(a2);
+                    arcos.push(a1, a2);
+                });
+            }
         }
     }
 
     // Retorna o grafo
-    grafo.vertices = vertices;
+    grafo.vertices = vertices.filter(v => v !== undefined);
     grafo.arcos = arcos;
     return grafo;
 }
