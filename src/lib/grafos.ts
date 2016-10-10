@@ -402,20 +402,100 @@ function importarXMLGraphMax(grafoXml: any): Grafo {
     return grafo;
 }
 
+// TODO: tornar a heurística ajustável
+function heuristicaDistancia(p1: Ponto, p2: Ponto): number {
+    return Math.sqrt(p1.x ** 2 + p2.y ** 2);
+}
+
 function importarXMLMatriz(mapa: any): Grafo {
-    function posicao(pos: string): Ponto {
+
+    function getPosicao(pos: string): Ponto {
         let strSplit = pos.split(",", 2).map(x => x.trim());
         let x = parseInt(strSplit[0], 10);
         let y = parseInt(strSplit[1], 10);
         return new Ponto(x, y);
     }
+
+    function getNome(linha: number, coluna: number): string {
+        return `${linha + 1},${coluna + 1}`;
+    }
+
+    function posTela(linha: number, coluna: number): Ponto {
+        return new Ponto(coluna * 64, linha * 64);
+    }
+
+    function posReal(linha: number, coluna: number): Ponto {
+        return new Ponto(coluna * 10, linha * 10);
+    }
+
+    function indiceMatriz(linha: number, coluna: number): number {
+        return coluna + (linha * colunas);
+    }
+
+    function getVertice(linha: number, coluna: number): Vertice | undefined {
+        if (linha >= 0 && linha < linhas && coluna >= 0 && coluna < colunas) {
+            return vertices[indiceMatriz(linha, coluna)];
+        }
+        return undefined;
+    }
+
+    function getVizinhos(linha: number, coluna: number): Vertice[] {
+        let vizinhos = new Array<Vertice>();
+        vizinhos.push(getVertice(linha - 1, coluna - 1));
+        vizinhos.push(getVertice(linha - 1, coluna    ));
+        vizinhos.push(getVertice(linha - 1, coluna + 1));
+        vizinhos.push(getVertice(linha    , coluna - 1));
+        vizinhos.push(getVertice(linha    , coluna + 1));
+        vizinhos.push(getVertice(linha + 1, coluna - 1));
+        vizinhos.push(getVertice(linha + 1, coluna    ));
+        vizinhos.push(getVertice(linha + 1, coluna + 1));
+        return vizinhos.filter(v => v !== undefined);
+    }
+
+    // Inicializa o grafo
+    let grafo = new Grafo();
+    grafo.dirigido = false;
+    grafo.ponderado = false;
+
+    // Extrai os dados do XML
     let linhas = mapa.LINHAS;
     let colunas = mapa.COLUNAS;
-    let inicio = posicao(mapa.INICIAL[0]);
-    let final = posicao(mapa.FINAL[0]);
-    let barreiras: Ponto[] = mapa.BARREIRAS[0].MURO.map((x: any) => posicao(x));
-    alert(barreiras.map(p => `x: ${p.x}, y: ${p.y}`).join("\n"));
-    return null;
+    let inicio = getPosicao(mapa.INICIAL[0]);
+    let final = getPosicao(mapa.FINAL[0]);
+    let barreiras: Ponto[] = mapa.BARREIRAS[0].MURO.map((x: any) => getPosicao(x));
+
+    // Prepara a estrutura de importação
+    let vertices = new Array<Vertice>(linhas * colunas);
+    let arcos = new Array<Arco>();
+    let id = 0;
+
+    // Preenche a matriz
+    for (let i = 0; i < linhas; i++) {
+        for (let j = 0; j < colunas; j++) {
+            let vertice = new Vertice(id++, getNome(i, j), posTela(i, j), posReal(i, j));
+            vertices[indiceMatriz(i, j)] = vertice;
+        }
+    }
+
+    // Conecta os vizinhos
+    for (let i = 0; i < linhas; i++) {
+        for (let j = 0; j < colunas; j++) {
+            let vertice = getVertice(i, j);
+            let vizinhos = getVizinhos(i, j);
+            vizinhos.forEach(vizinho => {
+                let a1 = new Arco(vizinho, 1);
+                let a2 = new Arco(vertice, 1);
+                vertice.arcos.push(a1);
+                vizinho.arcos.push(a2);
+                arcos.push(a1, a2);
+            });
+        }
+    }
+
+    // Retorna o grafo
+    grafo.vertices = vertices;
+    grafo.arcos = arcos;
+    return grafo;
 }
 
 export function importarXML(arquivo: File, retorno: (grafo: Grafo) => void): void {
