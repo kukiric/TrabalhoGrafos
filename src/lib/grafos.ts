@@ -4,6 +4,10 @@ import * as xml from "xml2js";
 // Estruturas de cálculo //
 ///////////////////////////
 
+export class Ponto {
+    public constructor(public x: number, public y: number) {}
+}
+
 export class Arco {
     public peso: number;
     public destino: Vertice;
@@ -18,13 +22,15 @@ export class Vertice {
     public id: number;
     public nome: string;
     public arcos: Arco[];
-    public posicao: {x: number, y: number};
+    public posTela: Ponto;
+    public posReal: Ponto;
 
-    public constructor(id: number, nome: String, posicao?: {x: number, y: number}) {
+    public constructor(id: number, nome: String, posTela?: Ponto, posReal?: Ponto) {
         this.id = id;
         this.nome = nome.toString();
         this.arcos = new Array();
-        this.posicao = posicao || {x: 0, y: 0};
+        this.posTela = posTela || new Ponto(0, 0);
+        this.posReal = posReal || new Ponto(0, 0);
     }
 
     // Retorna os vértices adjacentes em ordem alfabética
@@ -139,8 +145,8 @@ export class VerticeAciclico {
     constructor(vertice: Vertice) {
         this.nome = vertice.nome;
         this.id = vertice.id;
-        this.x = vertice.posicao.x;
-        this.y = vertice.posicao.y;
+        this.x = vertice.posTela.x;
+        this.y = vertice.posTela.y;
         this.arcos = vertice.arcos.map(arco => {
             return new ArcoAciclico(arco);
         });
@@ -362,17 +368,16 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?:
 // Métodos utilitários //
 /////////////////////////
 
-function importarXMLGraphMax(xml: any): Grafo {
+function importarXMLGraphMax(grafoXml: any): Grafo {
     let grafo = new Grafo();
-    let grafoXml = xml.Grafo;
     // Grava as propriedades do grafo
     grafo.ponderado = (grafoXml.$.ponderado === "true");
     grafo.dirigido = (grafoXml.$.dirigido === "true");
     // Grava os vértices do grafo
     grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
-        let idVertice = parseInt(v.$.relId);
+        let idVertice = parseInt(v.$.relId, 10);
         let rotulo = v.$.rotulo;
-        let posicao = {x: parseInt(v.$.posX), y: parseInt(v.$.posY)};
+        let posicao = new Ponto(parseInt(v.$.posX, 10), parseInt(v.$.posY, 10));
         let vertice = new Vertice(idVertice, rotulo, posicao);
         grafo.vertices.push(vertice);
     });
@@ -397,8 +402,19 @@ function importarXMLGraphMax(xml: any): Grafo {
     return grafo;
 }
 
-function importarXMLMatriz(xml: any): Grafo {
-    alert("Não implementado");
+function importarXMLMatriz(mapa: any): Grafo {
+    function posicao(pos: string): Ponto {
+        let strSplit = pos.split(",", 2).map(x => x.trim());
+        let x = parseInt(strSplit[0], 10);
+        let y = parseInt(strSplit[1], 10);
+        return new Ponto(x, y);
+    }
+    let linhas = mapa.LINHAS;
+    let colunas = mapa.COLUNAS;
+    let inicio = posicao(mapa.INICIAL[0]);
+    let final = posicao(mapa.FINAL[0]);
+    let barreiras: Ponto[] = mapa.BARREIRAS[0].MURO.map((x: any) => posicao(x));
+    alert(barreiras.map(p => `x: ${p.x}, y: ${p.y}`).join("\n"));
     return null;
 }
 
@@ -414,11 +430,11 @@ export function importarXML(arquivo: File, retorno: (grafo: Grafo) => void): voi
             else {
                 // Formato do GraphMax abre com a tag "Grafo"
                 if (dados.Grafo) {
-                    grafo = importarXMLGraphMax(dados);
+                    grafo = importarXMLGraphMax(dados.Grafo);
                 }
                 // Enquanto a matriz do A* abre com "MAPA"
                 else if (dados.MAPA) {
-                    grafo = importarXMLMatriz(dados);
+                    grafo = importarXMLMatriz(dados.MAPA);
                 }
                 // Se não, é um formato inválido
                 else {
