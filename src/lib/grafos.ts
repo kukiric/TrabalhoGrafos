@@ -362,6 +362,46 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?:
 // Métodos utilitários //
 /////////////////////////
 
+function importarXMLGraphMax(xml: any): Grafo {
+    let grafo = new Grafo();
+    let grafoXml = xml.Grafo;
+    // Grava as propriedades do grafo
+    grafo.ponderado = (grafoXml.$.ponderado === "true");
+    grafo.dirigido = (grafoXml.$.dirigido === "true");
+    // Grava os vértices do grafo
+    grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
+        let idVertice = parseInt(v.$.relId);
+        let rotulo = v.$.rotulo;
+        let posicao = {x: parseInt(v.$.posX), y: parseInt(v.$.posY)};
+        let vertice = new Vertice(idVertice, rotulo, posicao);
+        grafo.vertices.push(vertice);
+    });
+    // Grava as arestas do grafo
+    grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
+        let origem = parseInt(a.$.idVertice1);
+        let destino = parseInt(a.$.idVertice2);
+        let peso = parseFloat(a.$.peso);
+        let arco = new Arco(grafo.getVerticePorID(destino), peso);
+        grafo.getVerticePorID(origem).arcos.push(arco);
+        grafo.arcos.push(arco);
+        // Cria um arco simétrico se o grafo não for direcionado
+        if (grafo.dirigido === false) {
+            let arco2 = new Arco(grafo.getVerticePorID(origem), peso);
+            grafo.getVerticePorID(destino).arcos.push(arco2);
+            grafo.arcos.push(arco2);
+        }
+    });
+    // Ordena os vértices
+    grafo.vertices.sort((a, b) => a.compare(b));
+    // E retorna o grafo construído
+    return grafo;
+}
+
+function importarXMLMatriz(xml: any): Grafo {
+    alert("Não implementado");
+    return null;
+}
+
 export function importarXML(arquivo: File, retorno: (grafo: Grafo) => void): void {
     let grafo: Grafo = null;
     let leitor = new FileReader();
@@ -369,37 +409,22 @@ export function importarXML(arquivo: File, retorno: (grafo: Grafo) => void): voi
         xml.parseString(leitor.result, function(erro, dados) {
             if (erro != null) {
                 console.error(erro);
+                alert("O arquivo selecionado não é um XML válido!");
             }
-            grafo = new Grafo();
-            let grafoXml = dados.Grafo;
-            // Grava as propriedades do grafo
-            grafo.ponderado = (grafoXml.$.ponderado === "true");
-            grafo.dirigido = (grafoXml.$.dirigido === "true");
-            // Grava os vértices do grafo
-            grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
-                let idVertice = parseInt(v.$.relId);
-                let rotulo = v.$.rotulo;
-                let posicao = {x: parseInt(v.$.posX), y: parseInt(v.$.posY)};
-                let vertice = new Vertice(idVertice, rotulo, posicao);
-                grafo.vertices.push(vertice);
-            });
-            // Grava as arestas do grafo
-            grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
-                let origem = parseInt(a.$.idVertice1);
-                let destino = parseInt(a.$.idVertice2);
-                let peso = parseFloat(a.$.peso);
-                let arco = new Arco(grafo.getVerticePorID(destino), peso);
-                grafo.getVerticePorID(origem).arcos.push(arco);
-                grafo.arcos.push(arco);
-                // Cria um arco simétrico se o grafo não for direcionado
-                if (grafo.dirigido === false) {
-                    let arco2 = new Arco(grafo.getVerticePorID(origem), peso);
-                    grafo.getVerticePorID(destino).arcos.push(arco2);
-                    grafo.arcos.push(arco2);
+            else {
+                // Formato do GraphMax abre com a tag "Grafo"
+                if (dados.Grafo) {
+                    grafo = importarXMLGraphMax(dados);
                 }
-            });
-            // Ordena os vértices
-            grafo.vertices.sort((a, b) => a.compare(b));
+                // Enquanto a matriz do A* abre com "MAPA"
+                else if (dados.MAPA) {
+                    grafo = importarXMLMatriz(dados);
+                }
+                // Se não, é um formato inválido
+                else {
+                    alert("Formato do grafo não reconhecido!");
+                }
+            }
         });
         retorno(grafo);
     };

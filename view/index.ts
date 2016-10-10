@@ -44,13 +44,19 @@ $("#input_grafo").on("change", () => {
     let input = $("#input_grafo").get(0) as HTMLInputElement;
     let arquivo = input.files[0];
     if (arquivo != null) {
+        let grafoAntigo = grafo;
         // Limpa o canvas e bloqueia os botões
         grafo = null;
         limparBusca();
         grafoCarregado();
-        // Carrega o novo grafo
-        importarXML(arquivo, (novoGrafo) => {
-            grafo = novoGrafo;
+        // Usa o grafo novo se o carregamento completar com sucesso
+        importarXML(arquivo, (grafoNovo: Grafo) => {
+            if (grafoNovo) {
+                grafo = grafoNovo;
+            }
+            else {
+                grafo = grafoAntigo;
+            }
             grafoCarregado();
         });
     }
