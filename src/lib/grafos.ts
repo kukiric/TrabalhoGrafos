@@ -70,12 +70,16 @@ export class Grafo {
     public arcos: Arco[];
     public ponderado: boolean;
     public dirigido: boolean;
+    public mapa: boolean;
     public inicial: Vertice;
     public final: Vertice;
 
     public constructor() {
         this.vertices = new Array();
         this.arcos = new Array();
+        this.ponderado = false;
+        this.dirigido = false;
+        this.mapa = false;
         this.inicial = null;
         this.final = null;
     }
@@ -371,6 +375,14 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?:
     return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancias, "Dijkstra");
 }
 
+export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca {
+    if (!procurado) {
+        alert("Por favor, selecione um vértice de destino");
+        return null;
+    }
+    return null;
+}
+
 /////////////////////////
 // Métodos utilitários //
 /////////////////////////
@@ -502,8 +514,7 @@ function importarXMLMatriz(mapa: any): Grafo {
 
     // Constroi e retorna o grafo
     let grafo = new Grafo();
-    grafo.dirigido = false;
-    grafo.ponderado = false;
+    grafo.mapa = true;
     grafo.inicial = getVertice(inicio.x - 1, inicio.y - 1);
     grafo.final = getVertice(fim.x - 1, fim.y - 1);
     grafo.vertices = vertices.filter(v => v !== undefined);

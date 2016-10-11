@@ -17,6 +17,7 @@ import {
     buscaBFS,
     buscaDFS,
     buscaDijkstra,
+    buscaAStar,
     importarXML
 }
 from "../src/lib/grafos";
@@ -84,6 +85,10 @@ $("#botao_dijkstra").on("click", () => {
     buscar(buscaDijkstra);
 });
 
+$("#botao_astar").on("click", () => {
+    buscar(buscaAStar);
+});
+
 function grafoCarregado() {
     // Preenche as opções da busca
     let selects = $("#grafo_v1, #grafo_v2");
@@ -106,6 +111,7 @@ function grafoCarregado() {
         $(this).prop("disabled", grafo == null);
     });
     $("#botao_dijkstra").prop("disabled", grafo == null || !grafo.ponderado);
+    $("#botao_astar").prop("disabled", grafo == null || !grafo.mapa);
     selects.material_select();
     // Preenche as informações do grafo
     if (grafo != null) {
@@ -113,6 +119,7 @@ function grafoCarregado() {
         $("#grafo_arcos").text(grafo.dirigido ? grafo.arcos.length : grafo.arcos.length / 2);
         $("#grafo_direcionado").text(grafo.dirigido ? "Sim" : "Não");
         $("#grafo_ponderado").text(grafo.ponderado ? "Sim" : "Não");
+        $("#grafo_mapa").text(grafo.mapa ? "Sim" : "Não");
         $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
     }
     desenhaGrafo(contexto, grafo, busca, buscaCompleta);
@@ -186,9 +193,11 @@ function buscar(algoritmo: FuncaoBusca) {
         else {
             chamarBuscaCompleta(v1, algoritmo);
         }
-        $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
-        $("#botao_info").removeClass("disabled").addClass("waves-effect");
-        atualizarModalBusca();
+        if (busca) {
+            $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
+            $("#botao_info").removeClass("disabled").addClass("waves-effect");
+            atualizarModalBusca();
+        }
         desenhaGrafo(contexto, grafo, busca, buscaCompleta);
     }
 }
