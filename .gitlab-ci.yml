@@ -1,0 +1,19 @@
+image: ubuntu:16.04
+
+before_script:
+  - apt-get update -y > /dev/null
+  - apt-get install -y nodejs npm > /dev/null
+  - mkdir nodejs
+  - ln -s /usr/bin/nodejs nodejs/node
+  - export PATH=$(readlink -f nodejs):$PATH
+
+pages:
+  stage: deploy
+  script:
+    - npm install
+    - npm run make
+    - mkdir public
+    - cp view/index.html view/bundle.js public/
+  artifacts:
+    paths:
+      - public
