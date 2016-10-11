@@ -6,6 +6,9 @@ import * as xml from "xml2js";
 
 export class Ponto {
     public constructor(public x: number, public y: number) {}
+    public toString(): string {
+        return `(${this.x}, ${this.y})`;
+    }
 }
 
 export class Arco {
@@ -67,10 +70,14 @@ export class Grafo {
     public arcos: Arco[];
     public ponderado: boolean;
     public dirigido: boolean;
+    public inicial: Vertice;
+    public final: Vertice;
 
     public constructor() {
         this.vertices = new Array();
         this.arcos = new Array();
+        this.inicial = null;
+        this.final = null;
     }
 
     public getVerticePorID(id: number): Vertice {
@@ -452,16 +459,11 @@ function importarXMLMatriz(mapa: any): Grafo {
         return vizinhos.filter(v => v !== undefined);
     }
 
-    // Inicializa o grafo
-    let grafo = new Grafo();
-    grafo.dirigido = false;
-    grafo.ponderado = false;
-
     // Extrai os dados do XML
     let linhas = mapa.LINHAS;
     let colunas = mapa.COLUNAS;
     let inicio = getPosicao(mapa.INICIAL[0]);
-    let final = getPosicao(mapa.FINAL[0]);
+    let fim = getPosicao(mapa.FINAL[0]);
     let barreiras: Ponto[] = mapa.BARREIRAS[0].MURO.map((x: any) => getPosicao(x));
 
     // Prepara a estrutura de importação
@@ -498,7 +500,12 @@ function importarXMLMatriz(mapa: any): Grafo {
         }
     }
 
-    // Retorna o grafo
+    // Constroi e retorna o grafo
+    let grafo = new Grafo();
+    grafo.dirigido = false;
+    grafo.ponderado = false;
+    grafo.inicial = getVertice(inicio.x - 1, inicio.y - 1);
+    grafo.final = getVertice(fim.x - 1, fim.y - 1);
     grafo.vertices = vertices.filter(v => v !== undefined);
     grafo.arcos = arcos;
     return grafo;

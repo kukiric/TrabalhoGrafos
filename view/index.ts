@@ -93,6 +93,13 @@ function grafoCarregado() {
         grafo.vertices.forEach(vertice => {
             selects.append($("<option></option").attr("value", vertice.nome).text(vertice.nome));
         });
+        // Pré-seleciona o vértice inicial e o final se aplicável
+        if (grafo.inicial) {
+            $("#grafo_v1").val(grafo.inicial.nome).change();
+        }
+        if (grafo.final) {
+            $("#grafo_v2").val(grafo.final.nome).change();
+        }
     }
     // Ativa os botões do menu
     $("#botao_dfs, #botao_bfs, #botao_conexo, #grafo_v1, #grafo_v2").each(function() {
