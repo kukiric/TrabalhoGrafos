@@ -1,9 +1,12 @@
 import * as xml from "xml2js";
-import * as fs from "fs";
 
 ///////////////////////////
 // Estruturas de cálculo //
 ///////////////////////////
+
+export class Ponto {
+    public constructor(public x: number, public y: number) {}
+}
 
 export class Arco {
     public peso: number;
@@ -19,13 +22,15 @@ export class Vertice {
     public id: number;
     public nome: string;
     public arcos: Arco[];
-    public posicao: {x: number, y: number};
+    public posTela: Ponto;
+    public posReal: Ponto;
 
-    public constructor(id: number, nome: String, posicao?: {x: number, y: number}) {
+    public constructor(id: number, nome: String, posTela?: Ponto, posReal?: Ponto) {
         this.id = id;
         this.nome = nome.toString();
         this.arcos = new Array();
-        this.posicao = posicao || {x: 0, y: 0};
+        this.posTela = posTela || new Ponto(0, 0);
+        this.posReal = posReal || new Ponto(0, 0);
     }
 
     // Retorna os vértices adjacentes em ordem alfabética
@@ -140,8 +145,8 @@ export class VerticeAciclico {
     constructor(vertice: Vertice) {
         this.nome = vertice.nome;
         this.id = vertice.id;
-        this.x = vertice.posicao.x;
-        this.y = vertice.posicao.y;
+        this.x = vertice.posTela.x;
+        this.y = vertice.posTela.y;
         this.arcos = vertice.arcos.map(arco => {
             return new ArcoAciclico(arco);
         });
@@ -363,43 +368,169 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?:
 // Métodos utilitários //
 /////////////////////////
 
-export function importarXML(caminho: string): Grafo {
-    let arquivo = fs.readFileSync(caminho);
-    let grafo: Grafo = null;
-    xml.parseString(arquivo.toString(), function(erro, dados) {
-        if (erro != null) {
-            console.error(erro);
+function importarXMLGraphMax(grafoXml: any): Grafo {
+    let grafo = new Grafo();
+    // Grava as propriedades do grafo
+    grafo.ponderado = (grafoXml.$.ponderado === "true");
+    grafo.dirigido = (grafoXml.$.dirigido === "true");
+    // Grava os vértices do grafo
+    grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
+        let idVertice = parseInt(v.$.relId, 10);
+        let rotulo = v.$.rotulo;
+        let posicao = new Ponto(parseInt(v.$.posX, 10), parseInt(v.$.posY, 10));
+        let vertice = new Vertice(idVertice, rotulo, posicao);
+        grafo.vertices.push(vertice);
+    });
+    // Grava as arestas do grafo
+    grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
+        let origem = parseInt(a.$.idVertice1);
+        let destino = parseInt(a.$.idVertice2);
+        let peso = parseFloat(a.$.peso);
+        let arco = new Arco(grafo.getVerticePorID(destino), peso);
+        grafo.getVerticePorID(origem).arcos.push(arco);
+        grafo.arcos.push(arco);
+        // Cria um arco simétrico se o grafo não for direcionado
+        if (grafo.dirigido === false) {
+            let arco2 = new Arco(grafo.getVerticePorID(origem), peso);
+            grafo.getVerticePorID(destino).arcos.push(arco2);
+            grafo.arcos.push(arco2);
         }
-        grafo = new Grafo();
-        let grafoXml = dados.Grafo;
-        // Grava as propriedades do grafo
-        grafo.ponderado = (grafoXml.$.ponderado === "true");
-        grafo.dirigido = (grafoXml.$.dirigido === "true");
-        // Grava os vértices do grafo
-        grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
-            let idVertice = parseInt(v.$.relId);
-            let rotulo = v.$.rotulo;
-            let posicao = {x: parseInt(v.$.posX), y: parseInt(v.$.posY)};
-            let vertice = new Vertice(idVertice, rotulo, posicao);
-            grafo.vertices.push(vertice);
-        });
-        // Grava as arestas do grafo
-        grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
-            let origem = parseInt(a.$.idVertice1);
-            let destino = parseInt(a.$.idVertice2);
-            let peso = parseFloat(a.$.peso);
-            let arco = new Arco(grafo.getVerticePorID(destino), peso);
-            grafo.getVerticePorID(origem).arcos.push(arco);
-            grafo.arcos.push(arco);
-            // Cria um arco simétrico se o grafo não for direcionado
-            if (grafo.dirigido === false) {
-                let arco2 = new Arco(grafo.getVerticePorID(origem), peso);
-                grafo.getVerticePorID(destino).arcos.push(arco2);
-                grafo.arcos.push(arco2);
+    });
+    // Ordena os vértices
+    grafo.vertices.sort((a, b) => a.compare(b));
+    // E retorna o grafo construído
+    return grafo;
+}
+
+// TODO: tornar a heurística ajustável
+function heuristicaDistancia(p1: Ponto, p2: Ponto): number {
+    return Math.sqrt(p1.x ** 2 + p2.y ** 2);
+}
+
+function importarXMLMatriz(mapa: any): Grafo {
+
+    function getPosicao(pos: string): Ponto {
+        let strSplit = pos.split(",", 2).map(x => x.trim());
+        let x = parseInt(strSplit[0], 10);
+        let y = parseInt(strSplit[1], 10);
+        return new Ponto(x, y);
+    }
+
+    function getNome(linha: number, coluna: number): string {
+        return `${linha + 1},${coluna + 1}`;
+    }
+
+    function posTela(linha: number, coluna: number): Ponto {
+        return new Ponto(coluna * 64, linha * 64);
+    }
+
+    function posReal(linha: number, coluna: number): Ponto {
+        return new Ponto(coluna * 10, linha * 10);
+    }
+
+    function indiceMatriz(linha: number, coluna: number): number {
+        return coluna + (linha * colunas);
+    }
+
+    function getVertice(linha: number, coluna: number): Vertice | undefined {
+        if (linha >= 0 && linha < linhas && coluna >= 0 && coluna < colunas) {
+            return vertices[indiceMatriz(linha, coluna)];
+        }
+        return undefined;
+    }
+
+    function getVizinhos(linha: number, coluna: number): Vertice[] {
+        let vizinhos = new Array<Vertice>();
+        vizinhos.push(getVertice(linha - 1, coluna - 1));
+        vizinhos.push(getVertice(linha - 1, coluna    ));
+        vizinhos.push(getVertice(linha - 1, coluna + 1));
+        vizinhos.push(getVertice(linha    , coluna - 1));
+        vizinhos.push(getVertice(linha    , coluna + 1));
+        vizinhos.push(getVertice(linha + 1, coluna - 1));
+        vizinhos.push(getVertice(linha + 1, coluna    ));
+        vizinhos.push(getVertice(linha + 1, coluna + 1));
+        return vizinhos.filter(v => v !== undefined);
+    }
+
+    // Inicializa o grafo
+    let grafo = new Grafo();
+    grafo.dirigido = false;
+    grafo.ponderado = false;
+
+    // Extrai os dados do XML
+    let linhas = mapa.LINHAS;
+    let colunas = mapa.COLUNAS;
+    let inicio = getPosicao(mapa.INICIAL[0]);
+    let final = getPosicao(mapa.FINAL[0]);
+    let barreiras: Ponto[] = mapa.BARREIRAS[0].MURO.map((x: any) => getPosicao(x));
+
+    // Prepara a estrutura de importação
+    let vertices = new Array<Vertice>(linhas * colunas);
+    let arcos = new Array<Arco>();
+    let id = 0;
+
+    // Preenche a matriz
+    for (let i = 0; i < linhas; i++) {
+        for (let j = 0; j < colunas; j++) {
+            // Cria o vértice se não houver barreira nessa posição
+            if (!barreiras.find(p => p.x === i + 1 && p.y === j + 1)) {
+                let vertice = new Vertice(id++, getNome(i, j), posTela(i, j), posReal(i, j));
+                vertices[indiceMatriz(i, j)] = vertice;
+            }
+            else {
+                vertices[indiceMatriz(i, j)] = undefined;
+            }
+        }
+    }
+
+    // Conecta os vizinhos
+    for (let i = 0; i < linhas; i++) {
+        for (let j = 0; j < colunas; j++) {
+            let vertice = getVertice(i, j);
+            if (vertice !== undefined) {
+                let vizinhos = getVizinhos(i, j);
+                vizinhos.forEach(vizinho => {
+                    let a1 = new Arco(vizinho, 1);
+                    let a2 = new Arco(vertice, 1);
+                    vertice.arcos.push(a1);
+                    vizinho.arcos.push(a2);
+                    arcos.push(a1, a2);
+                });
+            }
+        }
+    }
+
+    // Retorna o grafo
+    grafo.vertices = vertices.filter(v => v !== undefined);
+    grafo.arcos = arcos;
+    return grafo;
+}
+
+export function importarXML(arquivo: File, retorno: (grafo: Grafo) => void): void {
+    let grafo: Grafo = null;
+    let leitor = new FileReader();
+    leitor.onload = function(event: Event) {
+        xml.parseString(leitor.result, function(erro, dados) {
+            if (erro != null) {
+                console.error(erro);
+                alert("O arquivo selecionado não é um XML válido!");
+            }
+            else {
+                // Formato do GraphMax abre com a tag "Grafo"
+                if (dados.Grafo) {
+                    grafo = importarXMLGraphMax(dados.Grafo);
+                }
+                // Enquanto a matriz do A* abre com "MAPA"
+                else if (dados.MAPA) {
+                    grafo = importarXMLMatriz(dados.MAPA);
+                }
+                // Se não, é um formato inválido
+                else {
+                    alert("Formato do grafo não reconhecido!");
+                }
             }
         });
-        // Ordena os vértices
-        grafo.vertices.sort((a, b) => a.compare(b));
-    });
-    return grafo;
+        retorno(grafo);
+    };
+    leitor.readAsText(arquivo, "UTF-8");
 }

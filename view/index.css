@@ -38,19 +38,19 @@ span.titulo {
     font-size: 125%;
 }
 
-button.fluid {
+.fluid {
     width: 100%;
 }
 
-button.spaced {
+.spaced {
     margin: 4px 0;
 }
 
-div.vazio.fixo {
+.vazio.fixo {
     height: 20px;
 }
 
-div.vazio.flex {
+.vazio.flex {
     flex-grow: 1;
 }
 

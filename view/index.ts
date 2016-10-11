@@ -1,5 +1,11 @@
-import * as electron from "electron";
-import * as $ from "jquery";
+// Estilos
+import "material-design-icons-iconfont/dist/material-design-icons.css";
+import "materialize-css/dist/css/materialize.css";
+import "./index.css";
+
+// Bibliotecas
+import "script!jquery";
+import "materialize-css";
 import {desenhaGrafo} from "../src/lib/drawing";
 import {
     Arco,
@@ -10,10 +16,19 @@ import {
     ResultadoBusca,
     buscaBFS,
     buscaDFS,
-    buscaDijkstra
+    buscaDijkstra,
+    importarXML
 }
 from "../src/lib/grafos";
 
+// Atualiza o HTML automaticamente em modo de desenvolvimento
+declare var process: any;
+declare function require(id: string): any;
+if (process.env.NODE_ENV === "development") {
+    require("./index.html");
+}
+
+// Variáveis globais
 const contexto = (document.getElementById("grafo") as HTMLCanvasElement).getContext("2d");
 let buscaCompleta = false;
 let distancias: number[];
@@ -21,19 +36,30 @@ let busca: ResultadoBusca;
 let grafo: Grafo;
 
 // Eventos do HTML
-$(window).on("resize", event => {
+$(window).on("resize", () => {
     desenhaGrafo(contexto, grafo, busca, buscaCompleta);
 });
 
-$("#botao_abrir").on("click", () => {
-    electron.ipcRenderer.once("set-grafo", (evento, grafoAciclico) => {
-        if (grafoAciclico != null) {
-            grafo = GrafoAciclico.prototype.toGrafo.apply(grafoAciclico);
-            grafoCarregado(grafo);
-            limparBusca();
-        }
-    });
-    electron.ipcRenderer.send("abrir-grafo", "set-grafo");
+$("#input_grafo").on("change", () => {
+    let input = $("#input_grafo").get(0) as HTMLInputElement;
+    let arquivo = input.files[0];
+    if (arquivo != null) {
+        let grafoAntigo = grafo;
+        // Limpa o canvas e bloqueia os botões
+        grafo = null;
+        limparBusca();
+        grafoCarregado();
+        // Usa o grafo novo se o carregamento completar com sucesso
+        importarXML(arquivo, (grafoNovo: Grafo) => {
+            if (grafoNovo) {
+                grafo = grafoNovo;
+            }
+            else {
+                grafo = grafoAntigo;
+            }
+            grafoCarregado();
+        });
+    }
 });
 
 $("#botao_limpar").on("click", () => {
@@ -58,11 +84,7 @@ $("#botao_dijkstra").on("click", () => {
     buscar(buscaDijkstra);
 });
 
-$("#botao_dev").on("click", () => {
-    electron.remote.getCurrentWebContents().toggleDevTools();
-});
-
-function grafoCarregado(grafo: Grafo) {
+function grafoCarregado() {
     // Preenche as opções da busca
     let selects = $("#grafo_v1, #grafo_v2");
     selects.empty();
@@ -86,6 +108,7 @@ function grafoCarregado(grafo: Grafo) {
         $("#grafo_ponderado").text(grafo.ponderado ? "Sim" : "Não");
         $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
     }
+    desenhaGrafo(contexto, grafo, busca, buscaCompleta);
 }
 
 function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: FuncaoBusca) {
@@ -191,4 +214,4 @@ function atualizarModalBusca() {
     }
 }
 
-grafoCarregado(null);
+grafoCarregado();

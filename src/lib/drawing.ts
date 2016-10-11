@@ -46,11 +46,11 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
     }
     // Calcula o centro do canvas e do grafo
     let centroCanvas = {x: contexto.canvas.width / 2, y: contexto.canvas.height / 2};
-    let centroGrafo = findCentro(grafo.vertices, (v) => v.posicao.x, (v) => v.posicao.y);
+    let centroGrafo = findCentro(grafo.vertices, (v) => v.posTela.x, (v) => v.posTela.y);
     // Funções de desenho no canvas
     function drawVertice(vertice: Vertice) {
-        let x = centroCanvas.x + vertice.posicao.x - centroGrafo.x;
-        let y = centroCanvas.y + vertice.posicao.y - centroGrafo.y;
+        let x = centroCanvas.x + vertice.posTela.x - centroGrafo.x;
+        let y = centroCanvas.y + vertice.posTela.y - centroGrafo.y;
         contexto.beginPath();
         contexto.lineWidth = larguraLinha * 2;
         contexto.strokeStyle = "black";
@@ -74,10 +74,10 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
         contexto.fillText(vertice.nome, x, y + 4);
     }
     function drawArco(v1: Vertice, v2: Vertice, peso: number, destacar: boolean) {
-        let x1 = centroCanvas.x + v1.posicao.x - centroGrafo.x;
-        let y1 = centroCanvas.y + v1.posicao.y - centroGrafo.y;
-        let x2 = centroCanvas.x + v2.posicao.x - centroGrafo.x;
-        let y2 = centroCanvas.y + v2.posicao.y - centroGrafo.y;
+        let x1 = centroCanvas.x + v1.posTela.x - centroGrafo.x;
+        let y1 = centroCanvas.y + v1.posTela.y - centroGrafo.y;
+        let x2 = centroCanvas.x + v2.posTela.x - centroGrafo.x;
+        let y2 = centroCanvas.y + v2.posTela.y - centroGrafo.y;
         let angulo = Math.atan2(y2 - y1, x2 - x1);
         // Desloca o início e o fim da linha até os raios dos vértices
         let distancia = raioVertice + larguraLinha;
