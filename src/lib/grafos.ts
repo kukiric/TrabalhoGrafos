@@ -490,11 +490,9 @@ function importarXMLMatriz(mapa: any): Grafo {
             if (vertice !== undefined) {
                 let vizinhos = getVizinhos(i, j);
                 vizinhos.forEach(vizinho => {
-                    let a1 = new Arco(vizinho, 1);
-                    let a2 = new Arco(vertice, 1);
-                    vertice.arcos.push(a1);
-                    vizinho.arcos.push(a2);
-                    arcos.push(a1, a2);
+                    let arco = new Arco(vizinho, 1);
+                    vertice.arcos.push(arco);
+                    arcos.push(arco);
                 });
             }
         }
