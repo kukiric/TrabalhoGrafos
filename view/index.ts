@@ -1,7 +1,6 @@
-// Estilos
+// Estilos extras
 import "material-design-icons-iconfont/dist/material-design-icons.css";
 import "materialize-css/dist/css/materialize.css";
-import "./index.css";
 
 // Bibliotecas
 import "script!jquery";
@@ -21,13 +20,6 @@ import {
     importarXML
 }
 from "../src/lib/grafos";
-
-// Atualiza o HTML automaticamente em modo de desenvolvimento
-declare var process: any;
-declare function require(id: string): any;
-if (process.env.NODE_ENV === "development") {
-    require("./index.html");
-}
 
 // Variáveis globais
 const contexto = (document.getElementById("grafo") as HTMLCanvasElement).getContext("2d");
@@ -231,3 +223,6 @@ function atualizarModalBusca() {
 }
 
 grafoCarregado();
+
+// Esconde a tela de carregamento
+$("#loader").addClass("hidden");

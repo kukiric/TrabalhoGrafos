@@ -1,8 +1,4 @@
 bower_modules/
 node_modules/
-typings/
-src/**/*.js.map
-src/**/*.js
-view/**/*.js.map
-view/**/*.js
+view/bundle_*.js
 .vscode/.*

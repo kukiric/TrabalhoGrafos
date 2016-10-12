@@ -13,7 +13,7 @@ pages:
     - npm install
     - npm run make
     - mkdir public
-    - cp view/index.html view/bundle.js public/
+    - cp view/index.html view/bundle_*.js public/
   artifacts:
     paths:
       - public

@@ -3,6 +3,17 @@
     <title>Grafos</title>
 </head>
 <body>
+    <script src="bundle_loader.js"></script>
+    <!-- Indicador de carregamento -->
+    <div id="loader">
+        <div class="dimmer"></div>
+        <div class="spinner-wrapper">
+            <div class="sk-wandering-cubes">
+                <div class="sk-cube sk-cube1"></div>
+                <div class="sk-cube sk-cube2"></div>
+            </div>
+        </div>
+    </div>
     <canvas class="grafo" id="grafo"></canvas>
     <!-- Botões de ação -->
     <a class="btn-floating waves-light orange disabled" id="botao_limpar" style="position: absolute; bottom: 16px; right: 464px;" href="#">
@@ -70,5 +81,5 @@
             <span class="titulo" id="busca_custo"></span>
         </div>
     </div>
-    <script src="bundle.js"></script>
+    <script src="bundle_index.js"></script>
 </body>
