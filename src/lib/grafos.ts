@@ -6,6 +6,7 @@ import * as xml from "xml2js";
 
 export class Ponto {
     public constructor(public x: number, public y: number) {}
+    public static zero = new Ponto(0, 0);
     public toString(): string {
         return `(${this.x}, ${this.y})`;
     }
@@ -28,12 +29,12 @@ export class Vertice {
     public posTela: Ponto;
     public posReal: Ponto;
 
-    public constructor(id: number, nome: String, posTela?: Ponto, posReal?: Ponto) {
+    public constructor(id: number, nome: String, posTela: Ponto = Ponto.zero, posReal: Ponto = posTela) {
         this.id = id;
         this.nome = nome.toString();
         this.arcos = new Array();
-        this.posTela = posTela || new Ponto(0, 0);
-        this.posReal = posReal || new Ponto(0, 0);
+        this.posTela = posTela;
+        this.posReal = posReal;
     }
 
     // Retorna os vértices adjacentes em ordem alfabética
@@ -455,9 +456,14 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
 
 function importarXMLGraphMax(grafoXml: any): Grafo {
     let grafo = new Grafo();
+
     // Grava as propriedades do grafo
     grafo.ponderado = (grafoXml.$.ponderado === "true");
     grafo.dirigido = (grafoXml.$.dirigido === "true");
+
+    // Permite o uso do A* em qualquer grafo (baseando-se nas posições dos vértices)
+    grafo.mapa = true;
+
     // Grava os vértices do grafo
     grafoXml.Vertices[0].Vertice.forEach(function(v: any) {
         let idVertice = parseInt(v.$.relId, 10);
@@ -466,6 +472,7 @@ function importarXMLGraphMax(grafoXml: any): Grafo {
         let vertice = new Vertice(idVertice, rotulo, posicao);
         grafo.vertices.push(vertice);
     });
+
     // Grava as arestas do grafo
     grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
         let origem = parseInt(a.$.idVertice1);
@@ -481,6 +488,7 @@ function importarXMLGraphMax(grafoXml: any): Grafo {
             grafo.arcos.push(arco2);
         }
     });
+
     // Ordena os vértices
     grafo.vertices.sort((a, b) => a.compare(b));
     // E retorna o grafo construído
