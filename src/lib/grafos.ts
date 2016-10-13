@@ -413,10 +413,10 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
         // Gera o caminho quando chegar no final
         if (vertice.equals(procurado)) {
             let caminho = new Array<Vertice>();
-            caminho.push(vertice);
+            caminho.unshift(vertice);
             while (cameFrom.has(vertice)) {
                 vertice = cameFrom.get(vertice);
-                caminho.push(vertice);
+                caminho.unshift(vertice);
             }
             let visitados = Array.from(fechados);
             let distancias = visitados.map(v => -1);
