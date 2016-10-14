@@ -24,13 +24,15 @@ from "../src/lib/grafos";
 // Variáveis globais
 const contexto = (document.getElementById("grafo") as HTMLCanvasElement).getContext("2d");
 let buscaCompleta = false;
+let buscaTerminada = false;
 let distancias: number[];
-let busca: ResultadoBusca;
+let frameBusca: ResultadoBusca;
+let busca: Iterator<ResultadoBusca>;
 let grafo: Grafo;
 
 // Eventos do HTML
 $(window).on("resize", () => {
-    desenhaGrafo(contexto, grafo, busca, buscaCompleta);
+    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 });
 
 $("#input_grafo").on("change", () => {
@@ -60,7 +62,7 @@ $("#botao_limpar").on("click", () => {
 });
 
 $("#botao_info").on("click", () => {
-    if (busca) {
+    if (frameBusca) {
         $("#modal_caminho").openModal();
     }
 });
@@ -79,6 +81,18 @@ $("#botao_dijkstra").on("click", () => {
 
 $("#botao_astar").on("click", () => {
     buscar(buscaAStar);
+});
+
+$("#botao_next").on("click", () => {
+    let iteracao = busca.next();
+    if (iteracao.value) {
+        frameBusca = iteracao.value;
+        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
+    }
+    if (iteracao.done) {
+        buscaTerminada = true;
+        alert("Fim da busca!");
+    }
 });
 
 function grafoCarregado() {
@@ -114,7 +128,7 @@ function grafoCarregado() {
         $("#grafo_mapa").text(grafo.mapa ? "Sim" : "Não");
         $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
     }
-    desenhaGrafo(contexto, grafo, busca, buscaCompleta);
+    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 }
 
 function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: FuncaoBusca) {
@@ -131,6 +145,7 @@ function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: Fu
     distancias = null;
     buscaCompleta = false;
     busca = algoritmo(v1, v2);
+    frameBusca = busca.next().value;
 }
 
 function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
@@ -142,23 +157,23 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
     limparBusca();
     let conexo = true;
     buscaCompleta = true;
-    busca = new ResultadoBusca(v1, null, new Array<Vertice>(), new Array<Vertice>(), false, new Array<number>(), "");
+    frameBusca = new ResultadoBusca(v1, null, new Array<Vertice>(), new Array<Vertice>(), false, new Array<number>(), "");
     // Percorre o grafo até todos os vértices terem sidos visistados, até os não conexos
     while (true) {
-        busca.visitados.push(v1);
-        let resultado = algoritmo(v1, null, busca.visitados);
-        busca.nome = resultado.nome;
-        busca.visitados = resultado.visitados;
+        frameBusca.visitados.push(v1);
+        let resultado = algoritmo(v1, null, frameBusca.visitados).next().value;
+        frameBusca.nome = resultado.nome;
+        frameBusca.visitados = resultado.visitados;
         // Só adiciona distâncias finitas enquanto a busca for conexa
         if (conexo) {
-            busca.distancias = busca.distancias.concat(resultado.distancias);
+            frameBusca.distancias = frameBusca.distancias.concat(resultado.distancias);
         }
         else {
-            busca.distancias = busca.distancias.concat(resultado.distancias.map(d => -1));
+            frameBusca.distancias = frameBusca.distancias.concat(resultado.distancias.map(d => -1));
         }
         // Busca o próximo vértice não visitado
         let completo = grafo.vertices.every(vertice => {
-            if (busca.visitados.find(visistado => vertice.equals(visistado))) {
+            if (frameBusca.visitados.find(visistado => vertice.equals(visistado))) {
                 return true;
             }
             else {
@@ -185,38 +200,38 @@ function buscar(algoritmo: FuncaoBusca) {
         else {
             chamarBuscaCompleta(v1, algoritmo);
         }
-        if (busca) {
+        if (frameBusca) {
             $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
             $("#botao_info").removeClass("disabled").addClass("waves-effect");
             atualizarModalBusca();
         }
-        desenhaGrafo(contexto, grafo, busca, buscaCompleta);
+        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
     }
 }
 
 function limparBusca() {
-    if (busca) {
-        busca = null;
+    if (frameBusca) {
+        frameBusca = null;
         distancias = null;
         buscaCompleta = false;
         $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
         $("#botao_info").addClass("disabled").removeClass("waves-effect");
     }
-    desenhaGrafo(contexto, grafo, busca, buscaCompleta);
+    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 }
 
 function atualizarModalBusca() {
-    if (busca) {
-        let contemDistancias = busca.distancias.length > 0 && busca.distancias[0] >= 0;
-        $("#busca_nome").text(busca.nome);
-        $("#busca_v1").text(busca.inicial.nome);
-        $("#busca_v2").text(busca.procurado ? busca.procurado.nome : "Todos");
+    if (frameBusca) {
+        let contemDistancias = frameBusca.distancias.length > 0 && frameBusca.distancias[0] >= 0;
+        $("#busca_nome").text(frameBusca.nome);
+        $("#busca_v1").text(frameBusca.inicial.nome);
+        $("#busca_v2").text(frameBusca.procurado ? frameBusca.procurado.nome : "Todos");
         let visitados = contemDistancias
-            ? busca.visitados.map((v, i) => `${v.nome} (${busca.distancias[i] >= 0 ? busca.distancias[i] : "∞"})`)
-            : busca.visitados.map(v => v.nome);
+            ? frameBusca.visitados.map((v, i) => `${v.nome} (${frameBusca.distancias[i] >= 0 ? frameBusca.distancias[i] : "∞"})`)
+            : frameBusca.visitados.map(v => v.nome);
         $("#busca_visitados").text(visitados.join(" > "));
-        $("#busca_caminho").text(busca.caminho.length > 0 ? busca.caminho.map(v => v.nome).join(" > ") : "Nenhum");
-        let distanciaFinal = busca.encontrado ? busca.distancias[busca.visitados.findIndex(e => e.equals(busca.procurado))] : "-1";
+        $("#busca_caminho").text(frameBusca.caminho.length > 0 ? frameBusca.caminho.map(v => v.nome).join(" > ") : "Nenhum");
+        let distanciaFinal = frameBusca.encontrado ? frameBusca.distancias[frameBusca.visitados.findIndex(e => e.equals(frameBusca.procurado))] : "-1";
         $("#busca_custo").text(buscaCompleta || !contemDistancias ? "" : "Custo para o destino: " + (distanciaFinal >= 0 ? distanciaFinal.toString() : "∞"));
         $("#modal_caminho").openModal();
     }

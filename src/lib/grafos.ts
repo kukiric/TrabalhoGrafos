@@ -105,7 +105,7 @@ export class Grafo {
     public isConexo(): boolean {
         // Verifica se todos os vértices têm ligação com todos os outros do grafo
         return this.vertices.every((inicial: Vertice) => {
-            return this.contemTodos(buscaDFS(inicial, null).visitados);
+            return this.contemTodos(buscaDFS(inicial, null).next().value.visitados);
         });
     }
 
@@ -204,7 +204,7 @@ export class GrafoAciclico {
 // Algorítmos de busca //
 /////////////////////////
 
-export type FuncaoBusca = (inicial: Vertice, procurado?: Vertice, Visitados?: Vertice[]) => ResultadoBusca;
+export type FuncaoBusca = (inicial: Vertice, procurado?: Vertice, Visitados?: Vertice[]) => Iterator<ResultadoBusca>;
 
 export class ResultadoBusca {
     constructor (
@@ -214,11 +214,14 @@ export class ResultadoBusca {
         public caminho: Vertice[],
         public encontrado: boolean,
         public distancias: number[],
-        public nome: string
+        public nome: string,
+        public abertos?: Vertice[],
+        public atual?: Vertice,
+        public checado?: Vertice
     ) {}
 }
 
-export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], caminho?: Vertice[]): ResultadoBusca {
+export function *buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], caminho?: Vertice[]): Iterator<ResultadoBusca> {
     if (visitados == null) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
@@ -233,7 +236,7 @@ export function buscaDFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
             // Busca todos os adjacentes ainda não visitados
             if (visitados.find(visistado => visistado.equals(adjacente)) == null) {
                 visitados.push(adjacente);
-                if (buscaDFS(adjacente, procurado, visitados, caminho).encontrado) {
+                if (buscaDFS(adjacente, procurado, visitados, caminho).next().value.encontrado) {
                     return true;
                 }
             }
@@ -267,7 +270,7 @@ class CadeiaBFS {
     }
 }
 
-export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], fila?: CadeiaBFS[], cadeia?: CadeiaBFS): ResultadoBusca {
+export function *buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[], fila?: CadeiaBFS[], cadeia?: CadeiaBFS): Iterator<ResultadoBusca> {
     if (visitados == null) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
@@ -302,7 +305,7 @@ export function buscaBFS(inicial: Vertice, procurado?: Vertice, visitados?: Vert
         // Remove esse elemento e segue para o próximo da fila
         fila.shift();
         if (fila.length > 0) {
-            let resultado = buscaBFS(fila[0].vertice, procurado, visitados, fila, fila[0]);
+            let resultado = buscaBFS(fila[0].vertice, procurado, visitados, fila, fila[0]).next().value;
             // Salva os valores das iterações seguintes
             encontrado = resultado.encontrado;
             caminho = resultado.caminho;
@@ -329,7 +332,7 @@ class CorrenteDijkstra {
     }
 }
 
-export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): ResultadoBusca {
+export function *buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?: Vertice[]): Iterator<ResultadoBusca> {
     if (visitados == null) {
         visitados = new Array<Vertice>();
         visitados.push(inicial);
@@ -376,7 +379,8 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?:
     return new ResultadoBusca(inicial, procurado, visitados, caminho, encontrado, distancias, "Dijkstra");
 }
 
-export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca {
+export function *buscaAStar(inicial: Vertice, procurado: Vertice): Iterator<ResultadoBusca> {
+    let it = 0;
     // Teorema de pitágoras (distância planar real)
     function heuristicaDistancia(v1: Vertice, v2: Vertice): number {
         let x = Math.abs(v2.posReal.x - v1.posReal.x);
@@ -394,9 +398,15 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
             }
         });
     }
-    // Junta os conjuntos de nós fechados
-    function getVisitados(todos: Set<Vertice>): Vertice[] {
-        return Array.from(todos);
+    // Constroi o caminho a partir da arvore
+    function getCaminho(arvore: Map<Vertice, Vertice>, vertice: Vertice): Vertice[] {
+        let caminho = new Array<Vertice>();
+        caminho.unshift(vertice);
+        while (arvoreCaminho.has(vertice)) {
+            vertice = arvoreCaminho.get(vertice);
+            caminho.unshift(vertice);
+        }
+        return caminho;
     }
     if (!procurado) {
         alert("Por favor, selecione um vértice de destino");
@@ -414,25 +424,27 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
     while (abertos.size > 0) {
         // Encontra o nó aberto mais próximo do final
         let vertice = getMaisProximo(Array.from(abertos), procurado);
-        // Gera o caminho quando chegar no final
-        if (vertice.equals(procurado)) {
-            let caminho = new Array<Vertice>();
-            caminho.unshift(vertice);
-            while (arvoreCaminho.has(vertice)) {
-                vertice = arvoreCaminho.get(vertice);
-                caminho.unshift(vertice);
-            }
-            let visitados = getVisitados(fechados);
-            let distancias = visitados.map(v => -1);
-            return new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*");
-        }
+        // Move o vértice da lista aberta pra fechada
         abertos.delete(vertice);
         fechados.add(vertice);
+        // Gera o caminho do passo atual
+        let caminho = getCaminho(arvoreCaminho, vertice);
+        let visitados = Array.from(fechados);
+        let visitadosAbertos = Array.from(abertos);
+        let distancias = visitados.map(v => -1);
+        // Finaliza a busca se esse for o nó final
+        if (vertice.equals(procurado)) {
+            return new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*");
+        }
+        yield new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*", visitadosAbertos, vertice);
         for (let adjacente of vertice.adjacentes) {
             // Não re-visita o mesmo vértice
             if (fechados.has(adjacente)) {
                 continue;
             }
+            // Pinta o progresso atual na tela
+            visitadosAbertos = Array.from(abertos);
+            yield new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*", visitadosAbertos, vertice, adjacente);
             // Calcula os valores G e H do nó
             let g = distInicio.get(vertice) + heuristicaDistancia(vertice, adjacente);
             let h = heuristicaDistancia(adjacente, procurado);
@@ -441,7 +453,7 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
                 abertos.add(adjacente);
             }
             // Ignora esse caminho se ele for mais distante do início
-            else if (g > distInicio.get(adjacente)) {
+            if (g > distInicio.get(adjacente)) {
                 continue;
             }
             arvoreCaminho.set(adjacente, vertice);
@@ -449,9 +461,10 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
             distTotal.set(adjacente, g + h);
         }
     }
-    let visitados = getVisitados(fechados);
+    let visitados = Array.from(fechados);
+    let visitadosAbertos = Array.from(abertos);
     let distancias = visitados.map(v => -1);
-    return new ResultadoBusca(inicial, procurado, visitados, [], false, distancias, "A*");
+    return new ResultadoBusca(inicial, procurado, visitados, [], false, distancias, "A*", visitadosAbertos);
 }
 
 /////////////////////////

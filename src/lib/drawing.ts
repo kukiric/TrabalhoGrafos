@@ -57,11 +57,20 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
         contexto.arc(x, y, raioVertice, 0, 2 * Math.PI);
         contexto.stroke();
         // Pinta os vértices do caminho encontrado em um destaque, e os outros percorridos em outro
-        if (buscaCompleta || busca.caminho.find(outroVertice => vertice.equals(outroVertice))) {
+        if (busca.atual && busca.atual.equals(vertice)) {
+            contexto.fillStyle = "#5dc7f4";
+        }
+        else if (busca.checado && busca.checado.equals(vertice)) {
+            contexto.fillStyle = "#9bdbf7";
+        }
+        else if (buscaCompleta || busca.caminho.find(outroVertice => vertice.equals(outroVertice))) {
             contexto.fillStyle = "#64e764";
         }
         else if (busca.visitados.find(outroVertice => vertice.equals(outroVertice))) {
             contexto.fillStyle = "#ff6e38";
+        }
+        else if (busca.abertos && busca.abertos.find(outroVertice => vertice.equals(outroVertice))) {
+            contexto.fillStyle = "white";
         }
         else {
             contexto.fillStyle = "lightgray";
