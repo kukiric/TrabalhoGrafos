@@ -406,10 +406,10 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
     let fechados = new Set<Vertice>();
     let abertos = new Set<Vertice>();
     let distInicio = new Map<Vertice, number>();
-    let custoTotal = new Map<Vertice, number>();
+    let distTotal = new Map<Vertice, number>();
     fechados.add(inicial);
     distInicio.set(inicial, 0);
-    custoTotal.set(inicial, 0 + heuristicaDistancia(inicial, procurado));
+    distTotal.set(inicial, 0 + heuristicaDistancia(inicial, procurado));
     abertos.add(inicial);
     while (abertos.size > 0) {
         // Encontra o nó aberto mais próximo do final
@@ -433,8 +433,8 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
             if (fechados.has(adjacente)) {
                 continue;
             }
-            // Calcula G e H do nó
-            let g = heuristicaDistancia(adjacente, inicial);
+            // Calcula os valores G e H do nó
+            let g = distInicio.get(vertice) + heuristicaDistancia(vertice, adjacente);
             let h = heuristicaDistancia(adjacente, procurado);
             // Adiciona esse vértice como um caminho provável
             if (!abertos.has(adjacente)) {
@@ -446,7 +446,7 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
             }
             arvoreCaminho.set(adjacente, vertice);
             distInicio.set(adjacente, g);
-            custoTotal.set(adjacente, g + h);
+            distTotal.set(adjacente, g + h);
         }
     }
     let visitados = getVisitados(fechados);
