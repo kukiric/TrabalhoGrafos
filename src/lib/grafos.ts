@@ -379,13 +379,24 @@ export function buscaDijkstra(inicial: Vertice, procurado?: Vertice, visitados?:
 export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca {
     // Teorema de pitágoras (distância planar real)
     function heuristicaDistancia(v1: Vertice, v2: Vertice): number {
-        let x = v2.posReal.x - v1.posReal.x;
-        let y = v2.posReal.y - v1.posReal.y;
+        let x = Math.abs(v2.posReal.x - v1.posReal.x);
+        let y = Math.abs(v2.posReal.y - v1.posReal.y);
         return Math.sqrt(x ** 2 + y ** 2);
     }
-    // Junta os conjuntos de nós abertos e fechados
-    function getVisitados(): Vertice[] {
-        return Array.from(fechados);
+    // Retorna o vértice com o menor distância heurística para um destino
+    function getMaisProximo(vertices: Vertice[], destino: Vertice): Vertice {
+        return vertices.reduce((anterior, atual) => {
+            if (heuristicaDistancia(atual, destino) < heuristicaDistancia(anterior, destino)) {
+                return atual;
+            }
+            else {
+                return anterior;
+            }
+        });
+    }
+    // Junta os conjuntos de nós fechados
+    function getVisitados(todos: Set<Vertice>): Vertice[] {
+        return Array.from(todos);
     }
     if (!procurado) {
         alert("Por favor, selecione um vértice de destino");
@@ -394,26 +405,15 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
     let arvoreCaminho = new Map<Vertice, Vertice>();
     let fechados = new Set<Vertice>();
     let abertos = new Set<Vertice>();
-    let gScore = new Map<Vertice, number>();
-    let fScore = new Map<Vertice, number>();
+    let distInicio = new Map<Vertice, number>();
+    let custoTotal = new Map<Vertice, number>();
     fechados.add(inicial);
-    gScore.set(inicial, 0);
-    fScore.set(inicial, heuristicaDistancia(inicial, procurado));
+    distInicio.set(inicial, 0);
+    custoTotal.set(inicial, 0 + heuristicaDistancia(inicial, procurado));
     abertos.add(inicial);
     while (abertos.size > 0) {
         // Encontra o nó aberto mais próximo do final
-        let vertice = function() {
-            let menor: Vertice;
-            let menorDist = 0;
-            for (let aberto of abertos) {
-                let f = fScore.get(aberto);
-                if (!menor || (!fechados.has(menor) && f < menorDist)) {
-                    menor = aberto;
-                    menorDist = f;
-                }
-            };
-            return menor;
-        }();
+        let vertice = getMaisProximo(Array.from(abertos), procurado);
         // Gera o caminho quando chegar no final
         if (vertice.equals(procurado)) {
             let caminho = new Array<Vertice>();
@@ -422,7 +422,7 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
                 vertice = arvoreCaminho.get(vertice);
                 caminho.unshift(vertice);
             }
-            let visitados = getVisitados();
+            let visitados = getVisitados(fechados);
             let distancias = visitados.map(v => -1);
             return new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*");
         }
@@ -441,15 +441,15 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
                 abertos.add(adjacente);
             }
             // Ignora esse caminho se ele for mais distante do início
-            else if (g > gScore.get(adjacente)) {
+            else if (g > distInicio.get(adjacente)) {
                 continue;
             }
             arvoreCaminho.set(adjacente, vertice);
-            gScore.set(adjacente, g);
-            fScore.set(adjacente, g + h);
+            distInicio.set(adjacente, g);
+            custoTotal.set(adjacente, g + h);
         }
     }
-    let visitados = getVisitados();
+    let visitados = getVisitados(fechados);
     let distancias = visitados.map(v => -1);
     return new ResultadoBusca(inicial, procurado, visitados, [], false, distancias, "A*");
 }
