@@ -114,11 +114,12 @@ function grafoCarregado() {
     // Preenche as informações do grafo
     if (grafo != null) {
         $("#grafo_vertices").text(grafo.vertices.length);
-        $("#grafo_arcos").text(grafo.dirigido ? grafo.arcos.length : grafo.arcos.length / 2);
+        $("#grafo_arcos").text(grafo.getNumArestas());
         $("#grafo_direcionado").text(grafo.dirigido ? "Sim" : "Não");
         $("#grafo_ponderado").text(grafo.ponderado ? "Sim" : "Não");
         $("#grafo_mapa").text(grafo.mapa ? "Sim" : "Não");
         $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
+        $("#grafo_planar").text(grafo.dirigido ? "?" : (grafo.isPlanar() ? "Sim" : "Não"));
     }
     desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 }

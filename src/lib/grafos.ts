@@ -102,11 +102,72 @@ export class Grafo {
         return this.vertices.every(v1 => subConjunto.find(v2 => v1.equals(v2)) != null);
     };
 
+    public getNumArestas(): number {
+        if (this.dirigido) {
+            return this.arcos.length;
+        }
+        else {
+            return this.arcos.length / 2;
+        }
+    }
+
+    public contemCiclo(tamanho: number): boolean {
+        if (tamanho <= 0) {
+            return true;
+        }
+        for (let vertice of this.vertices) {
+            let anteriores = new Map<Vertice, Vertice>();
+            let profundidades = new Map<Vertice, number>();
+            let visitados = new Set<Vertice>();
+            let fila = new Array<Vertice>();
+            fila.push(vertice);
+            profundidades.set(vertice, 0);
+            while (fila.length > 0) {
+                // Adiciona os pendentes na fila
+                let atual = fila[0];
+                let anterior = anteriores.get(atual);
+                let profundidade = profundidades.get(anterior) + 1;
+                // Ciclo encontrado
+                if (atual.equals(vertice) && profundidade === tamanho) {
+                    return true;
+                }
+                visitados.add(atual);
+                let novos = atual.adjacentes.filter(adj => !visitados.has(adj));
+                for (let novoAdjacente of novos) {
+                    anteriores.set(novoAdjacente, atual);
+                    fila.push(novoAdjacente);
+                }
+                fila.shift();
+            }
+        }
+        return false;
+    }
+
     public isConexo(): boolean {
         // Verifica se todos os vértices têm ligação com todos os outros do grafo
         return this.vertices.every((inicial: Vertice) => {
             return this.contemTodos(buscaDFS(inicial, null).next().value.visitados);
         });
+    }
+
+    public isPlanar(): boolean {
+        // Grafos com 4 vértices ou menos são sempre planares
+        if (this.vertices.length <= 4) {
+            return true;
+        }
+        // Aplica o teorema do Kuratowski
+        // E <= 3V - 6
+        if (this.getNumArestas() <= 3 * this.vertices.length - 6) {
+            // Ciclo de 3
+            if (this.contemCiclo(3)) {
+                return true;
+            }
+            // E <= 2V - 4
+            return this.getNumArestas() <= 2 * this.vertices.length - 4;
+        }
+        else {
+            return false;
+        }
     }
 
     public getMatrizAdjacencia(): number[][] {
@@ -476,8 +537,8 @@ function importarXMLGraphMax(grafoXml: any): Grafo {
     let grafo = new Grafo();
 
     // Grava as propriedades do grafo
-    grafo.ponderado = (grafoXml.$.ponderado === "true");
-    grafo.dirigido = (grafoXml.$.dirigido === "true");
+    // grafo.ponderado = (grafoXml.$.ponderado === "true");
+    // grafo.dirigido = (grafoXml.$.dirigido === "true");
 
     // Permite o uso do A* em qualquer grafo (baseando-se nas posições dos vértices)
     grafo.mapa = true;
