@@ -84,15 +84,7 @@ $("#botao_astar").on("click", () => {
 });
 
 $("#botao_next").on("click", () => {
-    let iteracao = busca.next();
-    if (iteracao.value) {
-        frameBusca = iteracao.value;
-        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
-    }
-    if (iteracao.done) {
-        buscaTerminada = true;
-        alert("Fim da busca!");
-    }
+    buscaNext();
 });
 
 function grafoCarregado() {
@@ -131,6 +123,19 @@ function grafoCarregado() {
     desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 }
 
+function buscaNext() {
+    let iteracao = busca.next();
+    if (iteracao.value) {
+        frameBusca = iteracao.value;
+        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
+    }
+    if (iteracao.done) {
+        $("#botao_next").prop("disabled", true);
+        buscaTerminada = true;
+        atualizarModalBusca();
+    }
+}
+
 function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: FuncaoBusca) {
     let v1 = grafo.getVerticePorNome(verticeInicial);
     let v2 = grafo.getVerticePorNome(verticeFinal);
@@ -145,7 +150,8 @@ function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: Fu
     distancias = null;
     buscaCompleta = false;
     busca = algoritmo(v1, v2);
-    frameBusca = busca.next().value;
+    $("#botao_next").prop("disabled", false);
+    buscaNext();
 }
 
 function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
