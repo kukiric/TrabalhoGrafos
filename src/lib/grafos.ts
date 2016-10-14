@@ -537,8 +537,8 @@ function importarXMLGraphMax(grafoXml: any): Grafo {
     let grafo = new Grafo();
 
     // Grava as propriedades do grafo
-    // grafo.ponderado = (grafoXml.$.ponderado === "true");
-    // grafo.dirigido = (grafoXml.$.dirigido === "true");
+    grafo.ponderado = (grafoXml.$.ponderado === "true");
+    grafo.dirigido = (grafoXml.$.dirigido === "true");
 
     // Permite o uso do A* em qualquer grafo (baseando-se nas posições dos vértices)
     grafo.mapa = true;
