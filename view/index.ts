@@ -119,7 +119,10 @@ function grafoCarregado() {
         $("#grafo_ponderado").text(grafo.ponderado ? "Sim" : "Não");
         $("#grafo_mapa").text(grafo.mapa ? "Sim" : "Não");
         $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
-        $("#grafo_planar").text(grafo.dirigido ? "?" : (grafo.isPlanar() ? "Sim" : "Não"));
+        $("#grafo_planar").html("<a id='botao_planar' href='#'>Clique para testar</a>");
+        $("#botao_planar").on("click", () => {
+            $("#grafo_planar").text(grafo.isPlanar() ? "Sim" : "Não");
+        });
     }
     desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 }

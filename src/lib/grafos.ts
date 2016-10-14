@@ -112,32 +112,36 @@ export class Grafo {
     }
 
     public contemCiclo(tamanho: number): boolean {
+        class CadeiaCiclo {
+            constructor(public vertice: Vertice, public pai: CadeiaCiclo, public distancia: number) {}
+        }
         if (tamanho <= 0) {
             return true;
         }
         for (let vertice of this.vertices) {
-            let anteriores = new Map<Vertice, Vertice>();
-            let profundidades = new Map<Vertice, number>();
+            // Faz um DFS até encontrar o mesmo vértice
+            let pilha = new Array<CadeiaCiclo>();
             let visitados = new Set<Vertice>();
-            let fila = new Array<Vertice>();
-            fila.push(vertice);
-            profundidades.set(vertice, 0);
-            while (fila.length > 0) {
-                // Adiciona os pendentes na fila
-                let atual = fila[0];
-                let anterior = anteriores.get(atual);
-                let profundidade = profundidades.get(anterior) + 1;
-                // Ciclo encontrado
-                if (atual.equals(vertice) && profundidade === tamanho) {
-                    return true;
+            let cadeia = new CadeiaCiclo(vertice, null, 0);
+            pilha.push(cadeia);
+            visitados.add(vertice);
+            while (pilha.length > 0) {
+                let atual = pilha.pop();
+                let distAtual = atual.distancia;
+                for (let adj of atual.vertice.adjacentes) {
+                    let distAdj = distAtual + 1;
+                    // Encontrado o ciclo se chegar de volta no inicial
+                    if (adj.equals(vertice)) {
+                        if (distAdj === tamanho) {
+                            return true;
+                        }
+                    }
+                    // Grava a distância do vértice se essa for a primeira visita nele
+                    // E somente se ele não extrapolar o tamanho do ciclo
+                    if (!visitados.has(adj) && distAdj < tamanho) {
+                        pilha.push(new CadeiaCiclo(adj, atual, distAdj));
+                    }
                 }
-                visitados.add(atual);
-                let novos = atual.adjacentes.filter(adj => !visitados.has(adj));
-                for (let novoAdjacente of novos) {
-                    anteriores.set(novoAdjacente, atual);
-                    fila.push(novoAdjacente);
-                }
-                fila.shift();
             }
         }
         return false;
@@ -165,9 +169,7 @@ export class Grafo {
             // E <= 2V - 4
             return this.getNumArestas() <= 2 * this.vertices.length - 4;
         }
-        else {
-            return false;
-        }
+        return false;
     }
 
     public getMatrizAdjacencia(): number[][] {
@@ -537,8 +539,8 @@ function importarXMLGraphMax(grafoXml: any): Grafo {
     let grafo = new Grafo();
 
     // Grava as propriedades do grafo
-    grafo.ponderado = (grafoXml.$.ponderado === "true");
-    grafo.dirigido = (grafoXml.$.dirigido === "true");
+    // grafo.ponderado = (grafoXml.$.ponderado === "true");
+    // grafo.dirigido = (grafoXml.$.dirigido === "true");
 
     // Permite o uso do A* em qualquer grafo (baseando-se nas posições dos vértices)
     grafo.mapa = true;
