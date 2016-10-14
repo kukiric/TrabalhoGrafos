@@ -383,11 +383,15 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
         let y = v2.posReal.y - v1.posReal.y;
         return Math.sqrt(x ** 2 + y ** 2);
     }
+    // Junta os conjuntos de nós abertos e fechados
+    function getVisitados(): Vertice[] {
+        return Array.from(fechados);
+    }
     if (!procurado) {
         alert("Por favor, selecione um vértice de destino");
         return null;
     }
-    let cameFrom = new Map<Vertice, Vertice>();
+    let arvoreCaminho = new Map<Vertice, Vertice>();
     let fechados = new Set<Vertice>();
     let abertos = new Set<Vertice>();
     let gScore = new Map<Vertice, number>();
@@ -414,11 +418,11 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
         if (vertice.equals(procurado)) {
             let caminho = new Array<Vertice>();
             caminho.unshift(vertice);
-            while (cameFrom.has(vertice)) {
-                vertice = cameFrom.get(vertice);
+            while (arvoreCaminho.has(vertice)) {
+                vertice = arvoreCaminho.get(vertice);
                 caminho.unshift(vertice);
             }
-            let visitados = Array.from(fechados);
+            let visitados = getVisitados();
             let distancias = visitados.map(v => -1);
             return new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*");
         }
@@ -440,12 +444,12 @@ export function buscaAStar(inicial: Vertice, procurado: Vertice): ResultadoBusca
             else if (g > gScore.get(adjacente)) {
                 continue;
             }
-            cameFrom.set(adjacente, vertice);
+            arvoreCaminho.set(adjacente, vertice);
             gScore.set(adjacente, g);
             fScore.set(adjacente, g + h);
         }
     }
-    let visitados = Array.from(fechados);
+    let visitados = getVisitados();
     let distancias = visitados.map(v => -1);
     return new ResultadoBusca(inicial, procurado, visitados, [], false, distancias, "A*");
 }
