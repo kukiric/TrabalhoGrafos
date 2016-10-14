@@ -128,9 +128,35 @@ function buscaNext() {
     if (iteracao.value) {
         frameBusca = iteracao.value;
         desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
+        if (frameBusca.checado && frameBusca.detalhes) {
+            let props = "Propriedades de " + frameBusca.checado.nome + ": { ";
+            let first = true;
+            for (let key in frameBusca.detalhes) {
+                if (!first) {
+                    props += ", ";
+                }
+                else {
+                    first = false;
+                }
+                let value = frameBusca.detalhes[key];
+                if (typeof value === "number") {
+                    value = value.toFixed(2);
+                }
+                else {
+                    value = value.toString();
+                }
+                props += key + " = " + value;
+            }
+            props += " }";
+            $("#busca_detalhes").text(props);
+        }
+        else {
+            $("#busca_detalhes").text("");
+        }
     }
     if (iteracao.done) {
         $("#botao_next").prop("disabled", true);
+        $("#busca_detalhes").text("Busca finalizada");
         buscaTerminada = true;
         atualizarModalBusca();
     }
@@ -167,15 +193,14 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
     // Percorre o grafo até todos os vértices terem sidos visistados, até os não conexos
     while (true) {
         frameBusca.visitados.push(v1);
-        let resultado = algoritmo(v1, null, frameBusca.visitados).next().value;
-        frameBusca.nome = resultado.nome;
-        frameBusca.visitados = resultado.visitados;
+        busca = algoritmo(v1, null, frameBusca.visitados);
+        buscaNext();
         // Só adiciona distâncias finitas enquanto a busca for conexa
         if (conexo) {
-            frameBusca.distancias = frameBusca.distancias.concat(resultado.distancias);
+            frameBusca.distancias = frameBusca.distancias.concat(frameBusca.distancias);
         }
         else {
-            frameBusca.distancias = frameBusca.distancias.concat(resultado.distancias.map(d => -1));
+            frameBusca.distancias = frameBusca.distancias.concat(frameBusca.distancias.map(d => -1));
         }
         // Busca o próximo vértice não visitado
         let completo = grafo.vertices.every(vertice => {
@@ -209,7 +234,6 @@ function buscar(algoritmo: FuncaoBusca) {
         if (frameBusca) {
             $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
             $("#botao_info").removeClass("disabled").addClass("waves-effect");
-            atualizarModalBusca();
         }
         desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
     }
@@ -222,6 +246,7 @@ function limparBusca() {
         buscaCompleta = false;
         $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
         $("#botao_info").addClass("disabled").removeClass("waves-effect");
+        $("#busca_detalhes").text("");
     }
     desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 }

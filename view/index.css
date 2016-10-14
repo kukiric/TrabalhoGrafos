@@ -78,6 +78,18 @@ span.titulo {
     flex-grow: 1;
 }
 
+#botao_limpar {
+    position: fixed;
+    bottom: 2em;
+    right: 464px;
+}
+
+#botao_info {
+    position: fixed;
+    bottom: 2em;
+    right: 416px;
+}
+
 div.copyright {
     color: #aaa;
     bottom: 0;
@@ -86,4 +98,14 @@ div.copyright {
     text-align: center;
     padding: 2px 8px;
     font-size: 80%;
+}
+
+div.details {
+    color: #333;
+    bottom: 0;
+    right: 400px;
+    position: fixed;
+    text-align: center;
+    padding: 2px 8px;
+    font-weight: bold;
 }

@@ -217,7 +217,8 @@ export class ResultadoBusca {
         public nome: string,
         public abertos?: Vertice[],
         public atual?: Vertice,
-        public checado?: Vertice
+        public checado?: Vertice,
+        public detalhes?: any
     ) {}
 }
 
@@ -442,12 +443,12 @@ export function *buscaAStar(inicial: Vertice, procurado: Vertice): Iterator<Resu
             if (fechados.has(adjacente)) {
                 continue;
             }
-            // Pinta o progresso atual na tela
-            visitadosAbertos = Array.from(abertos);
-            yield new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*", visitadosAbertos, vertice, adjacente);
             // Calcula os valores G e H do nó
             let g = distInicio.get(vertice) + heuristicaDistancia(vertice, adjacente);
             let h = heuristicaDistancia(adjacente, procurado);
+            // Pinta o progresso atual na tela
+            visitadosAbertos = Array.from(abertos);
+            yield new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*", visitadosAbertos, vertice, adjacente, {G: g, H: h, F: g + h});
             // Adiciona esse vértice como um caminho provável
             if (!abertos.has(adjacente)) {
                 abertos.add(adjacente);
