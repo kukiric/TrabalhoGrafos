@@ -52,11 +52,16 @@ export class Vertice {
         return this.arcos.map(adj => ({v: adj.destino, p: adj.peso})).sort((a, b) => a.v.compare(b.v));
     }
 
-    // Retorna todos os vértices adjacentes (diretos e inversos)
-    public get todosAdjacentes(): Vertice[] {
+    // Retorna todos os vértices adjacentes diretos e inversos
+    public get todosLigados(): Vertice[] {
         return this.arcos.map(adj => adj.destino)
             .concat(this.arcosInversos.map(adj => adj.origem))
             .sort((a, b) => a.compare(b));
+    }
+
+    // Retorna a soma do número de arcos diretos e arcos inversos
+    public get numTotalLigacoes(): number {
+        return this.arcos.length + this.arcosInversos.length;
     }
 
     // Compara igualdade
@@ -128,6 +133,30 @@ export class Grafo {
         return this.vertices.every((inicial: Vertice) => {
             return this.contemTodos(buscaDFS(inicial, null).next().value.visitados);
         });
+    }
+
+    public geraColoracao(): Map<Vertice, number> {
+        let resultado = new Map<Vertice, number>();
+        // Ordena os vértices por grau
+        let verticesGrau = this.vertices.slice().sort((a, b) => a.numTotalLigacoes - b.numTotalLigacoes);
+        // Calcula a cor de cada vértice do grafo
+        for (let vertice of this.vertices) {
+            let coresVizinhas = new Set<number>();
+            for (let vizinho of vertice.todosLigados) {
+                // Verifica se o vizinho já foi colorido
+                if (resultado.has(vizinho)) {
+                    coresVizinhas.add(resultado.get(vizinho));
+                }
+            }
+            // Busca a menor cor vizinha que não foi usada ainda
+            let cor = 0;
+            while (coresVizinhas.has(cor)) {
+                cor++;
+            }
+            // E salva no resultado
+            resultado.set(vertice, cor);
+        }
+        return resultado;
     }
 
     public getMatrizAdjacencia(): number[][] {

@@ -28,6 +28,7 @@ let buscaTerminada = false;
 let distancias: number[];
 let frameBusca: ResultadoBusca;
 let busca: Iterator<ResultadoBusca>;
+let cores: Map<Vertice, number>;
 let grafo: Grafo;
 
 // Eventos do HTML
@@ -87,6 +88,20 @@ $("#botao_next").on("click", () => {
     buscaNext();
 });
 
+$("#botao_coloracao").on("click", () => {
+    cores = grafo.geraColoracao();
+    let maiorCor = 0;
+    for (let cor of cores.values()) {
+        if (1 + cor > maiorCor) {
+            maiorCor = cor;
+        }
+    }
+    // Converte o número da maior cor (indexado de zero) para um valor
+    // de contagem incrementando o valor (assim, a primeira cor é 1,
+    // para uma cor, segunda é 2, para duas cors, etc)
+    $("#grafo_cores").text(maiorCor + 1);
+});
+
 function grafoCarregado() {
     // Preenche as opções da busca
     let selects = $("#grafo_v1, #grafo_v2");
@@ -119,6 +134,7 @@ function grafoCarregado() {
         $("#grafo_ponderado").text(grafo.ponderado ? "Sim" : "Não");
         $("#grafo_mapa").text(grafo.mapa ? "Sim" : "Não");
         $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
+        $("#grafo_cores").text("?");
     }
     desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 }
