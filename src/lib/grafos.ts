@@ -5,27 +5,31 @@ import * as xml from "xml2js";
 ///////////////////////////
 
 export class Ponto {
-    public constructor(public x: number, public y: number) {}
+    public constructor(
+        public x: number,
+        public y: number
+    ) {}
+
     public static zero = new Ponto(0, 0);
+
     public toString(): string {
         return `(${this.x}, ${this.y})`;
     }
 }
 
 export class Arco {
-    public peso: number;
-    public destino: Vertice;
-
-    public constructor(destino: Vertice, peso: number) {
-        this.peso = peso;
-        this.destino = destino;
-    }
+    public constructor(
+        public origem: Vertice,
+        public destino: Vertice,
+        public peso: number = 1
+    ) {}
 }
 
 export class Vertice {
     public id: number;
     public nome: string;
     public arcos: Arco[];
+    public arcosInversos: Arco[];
     public posTela: Ponto;
     public posReal: Ponto;
 
@@ -33,18 +37,26 @@ export class Vertice {
         this.id = id;
         this.nome = nome.toString();
         this.arcos = new Array();
+        this.arcosInversos = new Array();
         this.posTela = posTela;
         this.posReal = posReal;
     }
 
-    // Retorna os vértices adjacentes em ordem alfabética
+    // Retorna os vértices diretamente adjacentes em ordem alfabética
     public get adjacentes(): Vertice[] {
         return this.arcos.map(adj => adj.destino).sort((a, b) => a.compare(b));
     }
 
-    // Retorna os vértices adjacentes e seus pesos
+    // Retorna os vértices diretamente adjacentes e seus pesos
     public get adjacentesComPesos(): {v: Vertice, p: number}[] {
         return this.arcos.map(adj => ({v: adj.destino, p: adj.peso})).sort((a, b) => a.v.compare(b.v));
+    }
+
+    // Retorna todos os vértices adjacentes (diretos e inversos)
+    public get todosAdjacentes(): Vertice[] {
+        return this.arcos.map(adj => adj.destino)
+            .concat(this.arcosInversos.map(adj => adj.origem))
+            .sort((a, b) => a.compare(b));
     }
 
     // Compara igualdade
@@ -111,65 +123,11 @@ export class Grafo {
         }
     }
 
-    public contemCiclo(tamanho: number): boolean {
-        class CadeiaCiclo {
-            constructor(public vertice: Vertice, public pai: CadeiaCiclo, public distancia: number) {}
-        }
-        if (tamanho <= 0) {
-            return true;
-        }
-        for (let vertice of this.vertices) {
-            // Faz um DFS até encontrar o mesmo vértice
-            let pilha = new Array<CadeiaCiclo>();
-            let visitados = new Set<Vertice>();
-            let cadeia = new CadeiaCiclo(vertice, null, 0);
-            pilha.push(cadeia);
-            visitados.add(vertice);
-            while (pilha.length > 0) {
-                let atual = pilha.pop();
-                let distAtual = atual.distancia;
-                for (let adj of atual.vertice.adjacentes) {
-                    let distAdj = distAtual + 1;
-                    // Encontrado o ciclo se chegar de volta no inicial
-                    if (adj.equals(vertice)) {
-                        if (distAdj === tamanho) {
-                            return true;
-                        }
-                    }
-                    // Grava a distância do vértice se essa for a primeira visita nele
-                    // E somente se ele não extrapolar o tamanho do ciclo
-                    if (!visitados.has(adj) && distAdj < tamanho) {
-                        pilha.push(new CadeiaCiclo(adj, atual, distAdj));
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     public isConexo(): boolean {
         // Verifica se todos os vértices têm ligação com todos os outros do grafo
         return this.vertices.every((inicial: Vertice) => {
             return this.contemTodos(buscaDFS(inicial, null).next().value.visitados);
         });
-    }
-
-    public isPlanar(): boolean {
-        // Grafos com 4 vértices ou menos são sempre planares
-        if (this.vertices.length <= 4) {
-            return true;
-        }
-        // Aplica o teorema do Kuratowski
-        // E <= 3V - 6
-        if (this.getNumArestas() <= 3 * this.vertices.length - 6) {
-            // Ciclo de 3
-            if (this.contemCiclo(3)) {
-                return true;
-            }
-            // E <= 2V - 4
-            return this.getNumArestas() <= 2 * this.vertices.length - 4;
-        }
-        return false;
     }
 
     public getMatrizAdjacencia(): number[][] {
@@ -254,7 +212,7 @@ export class GrafoAciclico {
             vertice.arcos.forEach(arco => {
                 let v1 = grafo.getVerticePorID(vertice.id);
                 let v2 = grafo.getVerticePorID(arco.idDestino);
-                let arcoReal = new Arco(v2, arco.peso);
+                let arcoReal = new Arco(v1, v2, arco.peso);
                 grafo.arcos.push(arcoReal);
                 v1.arcos.push(arcoReal);
             });
@@ -556,17 +514,23 @@ function importarXMLGraphMax(grafoXml: any): Grafo {
 
     // Grava as arestas do grafo
     grafoXml.Arestas[0].Aresta.forEach(function(a: any) {
-        let origem = parseInt(a.$.idVertice1);
-        let destino = parseInt(a.$.idVertice2);
+        let idOrigem = parseInt(a.$.idVertice1);
+        let idDestino = parseInt(a.$.idVertice2);
+        let origem = grafo.getVerticePorID(idOrigem);
+        let destino = grafo.getVerticePorID(idDestino);
         let peso = parseFloat(a.$.peso);
-        let arco = new Arco(grafo.getVerticePorID(destino), peso);
-        grafo.getVerticePorID(origem).arcos.push(arco);
+        let arco = new Arco(origem, destino, peso);
+        origem.arcos.push(arco);
         grafo.arcos.push(arco);
         // Cria um arco simétrico se o grafo não for direcionado
         if (grafo.dirigido === false) {
-            let arco2 = new Arco(grafo.getVerticePorID(origem), peso);
-            grafo.getVerticePorID(destino).arcos.push(arco2);
+            let arco2 = new Arco(destino, origem, peso);
+            destino.arcos.push(arco2);
             grafo.arcos.push(arco2);
+        }
+        // Se não, cria somente o arco inverso (para referência interna)
+        else {
+            destino.arcosInversos.push(arco);
         }
     });
 
@@ -654,7 +618,7 @@ function importarXMLMatriz(mapa: any): Grafo {
             if (vertice !== undefined) {
                 let vizinhos = getVizinhos(i, j);
                 vizinhos.forEach(vizinho => {
-                    let arco = new Arco(vizinho, 1);
+                    let arco = new Arco(vertice, vizinho, 1);
                     vertice.arcos.push(arco);
                     arcos.push(arco);
                 });

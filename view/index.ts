@@ -105,7 +105,7 @@ function grafoCarregado() {
         }
     }
     // Ativa os botões do menu
-    $("#botao_dfs, #botao_bfs, #botao_conexo, #grafo_v1, #grafo_v2").each(function() {
+    $("#botao_dfs, #botao_bfs, #botao_coloracao, #grafo_v1, #grafo_v2").each(function() {
         $(this).prop("disabled", grafo == null);
     });
     $("#botao_dijkstra").prop("disabled", grafo == null || !grafo.ponderado);
@@ -119,10 +119,6 @@ function grafoCarregado() {
         $("#grafo_ponderado").text(grafo.ponderado ? "Sim" : "Não");
         $("#grafo_mapa").text(grafo.mapa ? "Sim" : "Não");
         $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
-        $("#grafo_planar").html("<a id='botao_planar' href='#'>Clique para testar</a>");
-        $("#botao_planar").on("click", () => {
-            $("#grafo_planar").text(grafo.isPlanar() ? "Sim" : "Não");
-        });
     }
     desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
 }
