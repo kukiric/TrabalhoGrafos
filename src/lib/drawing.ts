@@ -1,5 +1,7 @@
 import {Grafo, Vertice, Arco, ResultadoBusca} from "./grafos";
 
+let coresPadrao = ["salmon", "lightgreen", "lightblue", "yellow", "orange", "cyan"];
+
 // Função adaptada do StackOverflow
 // Usuário: http://stackoverflow.com/users/796329/titus-cieslewski
 // Postagem: http://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag/6333775#6333775
@@ -34,7 +36,7 @@ function isNoCaminho(caminho: Vertice[], v1: Vertice, v2: Vertice) {
 }
 
 // (Re-)desenha um grafo no canvas
-export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, busca?: ResultadoBusca, buscaCompleta?: boolean) {
+export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, busca: ResultadoBusca, buscaCompleta: boolean, cores: Map<Vertice, number>) {
     busca = busca || new ResultadoBusca(null, null, [], [], false, [], "");
     const raioVertice = 16;
     const larguraLinha = 2;
@@ -56,8 +58,13 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
         contexto.strokeStyle = "black";
         contexto.arc(x, y, raioVertice, 0, 2 * Math.PI);
         contexto.stroke();
+        // Maior prioridade: pintar a coloração
+        if (cores) {
+            let indice = cores.get(vertice) % coresPadrao.length;
+            contexto.fillStyle = coresPadrao[indice];
+        }
         // Pinta os vértices do caminho encontrado em um destaque, e os outros percorridos em outro
-        if (busca.atual && busca.atual.equals(vertice)) {
+        else if (busca.atual && busca.atual.equals(vertice)) {
             contexto.fillStyle = "#5dc7f4";
         }
         else if (busca.checado && busca.checado.equals(vertice)) {

@@ -33,7 +33,7 @@ let grafo: Grafo;
 
 // Eventos do HTML
 $(window).on("resize", () => {
-    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
+    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
 });
 
 $("#input_grafo").on("change", () => {
@@ -89,7 +89,10 @@ $("#botao_next").on("click", () => {
 });
 
 $("#botao_coloracao").on("click", () => {
+    limparBusca();
+    $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
     cores = grafo.geraColoracao();
+    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
     let maiorCor = 0;
     for (let cor of cores.values()) {
         if (1 + cor > maiorCor) {
@@ -136,14 +139,14 @@ function grafoCarregado() {
         $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
         $("#grafo_cores").text("?");
     }
-    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
+    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
 }
 
 function buscaNext() {
     let iteracao = busca.next();
     if (iteracao.value) {
         frameBusca = iteracao.value;
-        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
+        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
         if (frameBusca.checado && frameBusca.detalhes) {
             let props = "Propriedades de " + frameBusca.checado.nome + ": { ";
             let first = true;
@@ -189,6 +192,7 @@ function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: Fu
         alert("O vértice " + verticeFinal + " não existe no grafo!");
         return;
     }
+    cores = null;
     distancias = null;
     buscaCompleta = false;
     busca = algoritmo(v1, v2);
@@ -251,20 +255,19 @@ function buscar(algoritmo: FuncaoBusca) {
             $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
             $("#botao_info").removeClass("disabled").addClass("waves-effect");
         }
-        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
+        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
     }
 }
 
 function limparBusca() {
-    if (frameBusca) {
-        frameBusca = null;
-        distancias = null;
-        buscaCompleta = false;
-        $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
-        $("#botao_info").addClass("disabled").removeClass("waves-effect");
-        $("#busca_detalhes").text("");
-    }
-    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta);
+    cores = null;
+    frameBusca = null;
+    distancias = null;
+    buscaCompleta = false;
+    $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
+    $("#botao_info").addClass("disabled").removeClass("waves-effect");
+    $("#busca_detalhes").text("");
+    desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
 }
 
 function atualizarModalBusca() {
