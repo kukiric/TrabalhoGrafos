@@ -137,17 +137,7 @@ function grafoCarregado() {
         $("#grafo_direcionado").text(grafo.dirigido ? "Sim" : "Não");
         $("#grafo_ponderado").text(grafo.ponderado ? "Sim" : "Não");
         $("#grafo_mapa").text(grafo.mapa ? "Sim" : "Não");
-        switch (grafo.getConectividade()) {
-            case Conectividade.NaoConexo:
-                $("#grafo_conexo").text("Não conexo");
-                break;
-            case Conectividade.FracamenteConexo:
-                $("#grafo_conexo").text("Fracamente conexo");
-                break;
-            case Conectividade.FortementeConexo:
-                $("#grafo_conexo").text("Fortemente conexo");
-                break;
-        }
+        $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
         $("#grafo_cores").text("?");
     }
     desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);

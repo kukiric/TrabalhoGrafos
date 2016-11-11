@@ -134,41 +134,13 @@ export class Grafo {
         }
     }
 
-    public getConectividade(): Conectividade {
-        for (let vertice of this.vertices) {
-            let diretos = new Set<Vertice>();
-            let todos = new Set<Vertice>();
-            let pilhaDiretos = [vertice];
-            let pilhaTodos = [vertice];
-            // Encontráveis diretamente
-            while (pilhaDiretos.length > 0) {
-                let v1 = pilhaDiretos.pop();
-                for (let vizinho of v1.adjacentes) {
-                    if (!diretos.has(vizinho)) {
-                        diretos.add(vizinho);
-                        pilhaDiretos.push(vizinho);
-                    }
-                }
-            }
-            // Encontráveis diretamente e indiretamente
-            while (pilhaTodos.length > 0) {
-                let v1 = pilhaTodos.pop();
-                for (let vizinho of v1.todosLigados) {
-                    if (!todos.has(vizinho)) {
-                        todos.add(vizinho);
-                        pilhaTodos.push(vizinho);
-                    }
-                }
-            }
-            // Nível de conectividade desse vértice
-            if (this.vertices.every(v1 => diretos.has(v1))) {
-                return Conectividade.FortementeConexo;
-            }
-            else if (this.vertices.every(v1 => todos.has(v1))) {
-                return Conectividade.FracamenteConexo;
-            }
-        }
-        return Conectividade.NaoConexo;
+    public isConexo(): boolean {
+        return this.vertices.every(vertice => {
+            let busca = buscaDFS(vertice).next().value;
+            return this.vertices.every(outro => {
+                return busca.visitados.find(cada => cada.equals(outro)) != null;
+            });
+        });
     }
 
     public geraColoracao(): Map<Vertice, number> {
