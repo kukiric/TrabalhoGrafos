@@ -17,6 +17,7 @@ import {
     buscaBFS,
     buscaDFS,
     buscaDijkstra,
+    buscaPCV,
     buscaAStar,
     importarXML
 }
@@ -81,6 +82,10 @@ $("#botao_dijkstra").on("click", () => {
     buscar(buscaDijkstra);
 });
 
+$("#botao_pcv").on("click", () => {
+    buscar(buscaPCV, false);
+});
+
 $("#botao_astar").on("click", () => {
     buscar(buscaAStar);
 });
@@ -128,6 +133,7 @@ function grafoCarregado() {
         $(this).prop("disabled", grafo == null);
     });
     $("#botao_dijkstra").prop("disabled", grafo == null || !grafo.ponderado);
+    $("#botao_pcv").prop("disabled", grafo == null || grafo.dirigido || !grafo.ponderado);
     $("#botao_astar").prop("disabled", grafo == null || !grafo.mapa);
     selects.material_select();
     // Preenche as informações do grafo
@@ -145,7 +151,7 @@ function grafoCarregado() {
 
 function buscaNext() {
     let iteracao = busca.next();
-    if (iteracao.value) {
+    if (iteracao.value != null) {
         frameBusca = iteracao.value;
         desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
         if (frameBusca.checado && frameBusca.detalhes) {
@@ -185,14 +191,6 @@ function buscaNext() {
 function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: FuncaoBusca) {
     let v1 = grafo.getVerticePorNome(verticeInicial);
     let v2 = grafo.getVerticePorNome(verticeFinal);
-    if (v1 == null) {
-        alert("O vértice " + verticeInicial + " não existe no grafo!");
-        return;
-    }
-    if (v2 == null) {
-        alert("O vértice " + verticeFinal + " não existe no grafo!");
-        return;
-    }
     cores = null;
     distancias = null;
     buscaCompleta = false;
@@ -203,10 +201,6 @@ function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: Fu
 
 function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
     let v1 = grafo.getVerticePorNome(verticeInicial);
-    if (v1 == null) {
-        alert("O vértice " + verticeInicial + " não existe no grafo!");
-        return;
-    }
     limparBusca();
     let conexo = true;
     buscaCompleta = true;
@@ -241,12 +235,12 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
     }
 }
 
-function buscar(algoritmo: FuncaoBusca) {
+function buscar(algoritmo: FuncaoBusca, permitirBuscaCompleta: boolean = true) {
     if (grafo != null) {
         let v1 = $("#grafo_v1").val();
         let v2 = $("#grafo_v2").val();
         // Não alterar, o valor do null é representado em string no HTML
-        if (v2 !== "null") {
+        if (!permitirBuscaCompleta || v2 !== "null") {
             chamarBusca(v1, v2, algoritmo);
         }
         else {

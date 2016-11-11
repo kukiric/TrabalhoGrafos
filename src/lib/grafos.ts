@@ -526,6 +526,10 @@ export function *buscaAStar(inicial: Vertice, procurado: Vertice): Iterator<Resu
     return new ResultadoBusca(inicial, procurado, visitados, [], false, distancias, "A*", visitadosAbertos);
 }
 
+export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
+    return new ResultadoBusca(inicial, null, [inicial], [], false, [], "Caxeiro Viajante");
+}
+
 /////////////////////////
 // Métodos utilitários //
 /////////////////////////
