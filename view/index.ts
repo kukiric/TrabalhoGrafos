@@ -83,7 +83,7 @@ $("#botao_dijkstra").on("click", () => {
 });
 
 $("#botao_pcv").on("click", () => {
-    buscar(buscaPCV, false);
+    buscar(buscaPCV, true);
 });
 
 $("#botao_astar").on("click", () => {
@@ -128,12 +128,13 @@ function grafoCarregado() {
             $("#grafo_v2").val(grafo.final.nome).change();
         }
     }
+    let isConexo = grafo != null && grafo.isConexo();
     // Ativa os botões do menu
     $("#botao_dfs, #botao_bfs, #botao_coloracao, #grafo_v1, #grafo_v2").each(function() {
         $(this).prop("disabled", grafo == null);
     });
     $("#botao_dijkstra").prop("disabled", grafo == null || !grafo.ponderado);
-    $("#botao_pcv").prop("disabled", grafo == null || grafo.dirigido || !grafo.ponderado);
+    $("#botao_pcv").prop("disabled", grafo == null || !isConexo || grafo.dirigido || !grafo.ponderado);
     $("#botao_astar").prop("disabled", grafo == null || !grafo.mapa);
     selects.material_select();
     // Preenche as informações do grafo
@@ -143,7 +144,7 @@ function grafoCarregado() {
         $("#grafo_direcionado").text(grafo.dirigido ? "Sim" : "Não");
         $("#grafo_ponderado").text(grafo.ponderado ? "Sim" : "Não");
         $("#grafo_mapa").text(grafo.mapa ? "Sim" : "Não");
-        $("#grafo_conexo").text(grafo.isConexo() ? "Sim" : "Não");
+        $("#grafo_conexo").text(isConexo ? "Sim" : "Não");
         $("#grafo_cores").text("?");
     }
     desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
@@ -235,12 +236,12 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
     }
 }
 
-function buscar(algoritmo: FuncaoBusca, permitirBuscaCompleta: boolean = true) {
+function buscar(algoritmo: FuncaoBusca, isCaxeiroViajante: boolean = false) {
     if (grafo != null) {
         let v1 = $("#grafo_v1").val();
         let v2 = $("#grafo_v2").val();
         // Não alterar, o valor do null é representado em string no HTML
-        if (!permitirBuscaCompleta || v2 !== "null") {
+        if (isCaxeiroViajante || v2 !== "null") {
             chamarBusca(v1, v2, algoritmo);
         }
         else {

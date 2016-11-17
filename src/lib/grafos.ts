@@ -32,14 +32,16 @@ export class Vertice {
     public arcosInversos: Arco[];
     public posTela: Ponto;
     public posReal: Ponto;
+    public grafo: Grafo;
 
-    public constructor(id: number, nome: String, posTela: Ponto = Ponto.zero, posReal: Ponto = posTela) {
+    public constructor(id: number, nome: String, posTela: Ponto = Ponto.zero, posReal: Ponto = posTela, grafo: Grafo) {
         this.id = id;
         this.nome = nome.toString();
         this.arcos = new Array();
         this.arcosInversos = new Array();
         this.posTela = posTela;
         this.posReal = posReal;
+        this.grafo = grafo;
     }
 
     // Retorna os vértices diretamente adjacentes em ordem alfabética
@@ -241,7 +243,7 @@ export class GrafoAciclico {
         grafo.dirigido = this.dirigido;
         // Re-cria os vértices
         this.vertices.forEach(vertice => {
-            let verticeReal = new Vertice(vertice.id, vertice.nome, {x: vertice.x, y: vertice.y});
+            let verticeReal = new Vertice(vertice.id, vertice.nome, {x: vertice.x, y: vertice.y}, {x: vertice.x, y: vertice.y}, grafo);
             grafo.vertices.push(verticeReal);
         });
         // Re-cria os arcos
@@ -527,7 +529,48 @@ export function *buscaAStar(inicial: Vertice, procurado: Vertice): Iterator<Resu
 }
 
 export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
-    return new ResultadoBusca(inicial, null, [inicial], [], false, [], "Caxeiro Viajante");
+    // Heurística: Inserção de Menor Encargo
+    type ArcoCiclo = {v: Vertice, p: number};
+    let grafo = inicial.grafo;
+    let cicloCompleto = new Array<ArcoCiclo>();
+    // Primeiro, encontra a menor aresta possível
+    // Desta aresta, será construído o primeiro sub-ciclo de ida e volta
+    let arestaInicio = grafo.arcos.reduce((prev, curr) => prev.peso < curr.peso ? prev : curr);
+    // Distância de ida e volta
+    let distTotal = arestaInicio.peso + arestaInicio.peso;
+    let caminho = [arestaInicio.origem, arestaInicio.destino, arestaInicio.origem];
+    let adicionados = new Set<Vertice>(caminho);
+    while (true) {
+        let verticeMenorDist: Vertice;
+        let menorDist = Infinity;
+        let indiceInsercao: number;
+        // Tenta cada vizinho do primeiro vértice
+        caminho.forEach((v1, i) => {
+            let v2 = caminho[i + 1];
+            let adjacentes = v1.adjacentesComPesos;
+            // Mede a distância de cada adjacente até o segundo vértice
+            adjacentes.forEach(adj => {
+                // Encontra a distância até v2 desse vértice
+                let arestaParaV2 = adj.v.adjacentesComPesos.find(outro => outro.v.equals(v2));
+                if (arestaParaV2 != null) {
+                    // Soma a distância de ida e volta
+                    let dist = adj.p + arestaParaV2.p;
+                    if (dist < menorDist && !adicionados.has(adj.v)) {
+                        menorDist = dist;
+                        verticeMenorDist = adj.v;
+                        indiceInsercao = i + 1;
+                        adicionados.add(adj.v);
+                    }
+                }
+            });
+        });
+        if (verticeMenorDist === undefined) {
+            break;
+        }
+        caminho.splice(indiceInsercao, 0, verticeMenorDist);
+    }
+    let visitados = caminho.filter((v, i, arr) => i === arr.indexOf(v));
+    return new ResultadoBusca(inicial, null, visitados, caminho, true, [], "Caxeiro Viajante");
 }
 
 /////////////////////////
@@ -549,7 +592,7 @@ function importarXMLGraphMax(grafoXml: any): Grafo {
         let idVertice = parseInt(v.$.relId, 10);
         let rotulo = v.$.rotulo;
         let posicao = new Ponto(parseInt(v.$.posX, 10), parseInt(v.$.posY, 10));
-        let vertice = new Vertice(idVertice, rotulo, posicao);
+        let vertice = new Vertice(idVertice, rotulo, posicao, posicao, grafo);
         grafo.vertices.push(vertice);
     });
 
@@ -634,6 +677,7 @@ function importarXMLMatriz(mapa: any): Grafo {
     let barreiras: Ponto[] = mapa.BARREIRAS[0].MURO.map((x: any) => getPosicao(x));
 
     // Prepara a estrutura de importação
+    let grafo = new Grafo();
     let vertices = new Array<Vertice>(linhas * colunas);
     let arcos = new Array<Arco>();
     let id = 0;
@@ -643,7 +687,7 @@ function importarXMLMatriz(mapa: any): Grafo {
         for (let j = 0; j < colunas; j++) {
             // Cria o vértice se não houver barreira nessa posição
             if (!barreiras.find(p => p.x === i + 1 && p.y === j + 1)) {
-                let vertice = new Vertice(id++, getNome(i, j), posTela(i, j), posReal(i, j));
+                let vertice = new Vertice(id++, getNome(i, j), posTela(i, j), posReal(i, j), grafo);
                 vertices[indiceMatriz(i, j)] = vertice;
             }
             else {
@@ -668,7 +712,6 @@ function importarXMLMatriz(mapa: any): Grafo {
     }
 
     // Constroi e retorna o grafo
-    let grafo = new Grafo();
     grafo.mapa = true;
     grafo.inicial = getVertice(inicio.x - 1, inicio.y - 1);
     grafo.final = getVertice(fim.x - 1, fim.y - 1);
