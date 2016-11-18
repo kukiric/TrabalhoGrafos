@@ -94,6 +94,12 @@ $("#botao_next").on("click", () => {
     buscaNext();
 });
 
+$("#botao_skip").on("click", () => {
+    while (!buscaNext()) {
+        continue;
+    }
+});
+
 $("#botao_coloracao").on("click", () => {
     limparBusca();
     $("#botao_limpar").removeClass("disabled").addClass("waves-effect");
@@ -136,6 +142,7 @@ function grafoCarregado() {
     $("#botao_dijkstra").prop("disabled", grafo == null || !grafo.ponderado);
     $("#botao_pcv").prop("disabled", grafo == null || !isConexo || grafo.dirigido || !grafo.ponderado);
     $("#botao_astar").prop("disabled", grafo == null || !grafo.mapa);
+    $("#botao_next, #botao_skip").prop("disabled", true);
     selects.material_select();
     // Preenche as informações do grafo
     if (grafo != null) {
@@ -183,10 +190,13 @@ function buscaNext() {
     }
     if (iteracao.done) {
         $("#botao_next").prop("disabled", true);
+        $("#botao_skip").prop("disabled", true);
         $("#busca_detalhes").text("Busca finalizada");
         buscaTerminada = true;
         atualizarModalBusca();
+        return true;
     }
+    return false;
 }
 
 function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: FuncaoBusca) {
@@ -197,6 +207,7 @@ function chamarBusca(verticeInicial: string, verticeFinal: string, algoritmo: Fu
     buscaCompleta = false;
     busca = algoritmo(v1, v2);
     $("#botao_next").prop("disabled", false);
+    $("#botao_skip").prop("disabled", false);
     buscaNext();
 }
 

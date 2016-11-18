@@ -580,7 +580,13 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
         yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
     }
     let visitados = caminho.filter((v, i, arr) => i === arr.indexOf(v));
-    return new ResultadoBusca(inicial, null, visitados, caminho, true, [], "Caxeiro Viajante");
+    // Verifica se o caxeiro viajante conteve todos os vértices do grafo
+    if (grafo.vertices.every(v1 => adicionados.has(v1))) {
+        return new ResultadoBusca(inicial, null, visitados, caminho, true, [], "Caxeiro Viajante");
+    }
+    else {
+        return new ResultadoBusca(inicial, null, visitados, [], false, [], "Caxeiro Viajante");
+    }
 }
 
 /////////////////////////
