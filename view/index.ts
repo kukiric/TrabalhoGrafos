@@ -163,26 +163,31 @@ function buscaNext() {
         frameBusca = iteracao.value;
         desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
         if (frameBusca.checado && frameBusca.detalhes) {
-            let props = "Propriedades de " + frameBusca.checado.nome + ": { ";
-            let first = true;
-            for (let key in frameBusca.detalhes) {
-                if (!first) {
-                    props += ", ";
-                }
-                else {
-                    first = false;
-                }
-                let value = frameBusca.detalhes[key];
-                if (typeof value === "number") {
-                    value = value.toFixed(2);
-                }
-                else {
-                    value = value.toString();
-                }
-                props += key + " = " + value;
+            if (typeof (frameBusca.detalhes) === "string") {
+                $("#busca_detalhes").text(frameBusca.detalhes);
             }
-            props += " }";
-            $("#busca_detalhes").text(props);
+            else {
+                let props = "Propriedades de " + frameBusca.checado.nome + ": { ";
+                let first = true;
+                for (let key in frameBusca.detalhes) {
+                    if (!first) {
+                        props += ", ";
+                    }
+                    else {
+                        first = false;
+                    }
+                    let value = frameBusca.detalhes[key];
+                    if (typeof value === "number") {
+                        value = value.toFixed(2);
+                    }
+                    else {
+                        value = value.toString();
+                    }
+                    props += key + " = " + value;
+                }
+                props += " }";
+                $("#busca_detalhes").text(props);
+            }
         }
         else {
             $("#busca_detalhes").text("");

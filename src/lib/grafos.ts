@@ -540,15 +540,16 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
         return null;
     }
     let cicloCompleto = new Array<ArcoCiclo>();
-    let arestaInfinita: Arco = null;
+    let arestaInfinita: Arco;
     // Primeiro, encontra a menor aresta possível
     // Desta aresta, será construído o primeiro sub-ciclo de ida e volta
     let arestaInicial = grafo.arcos.reduce((prev, curr) => prev.peso < curr.peso ? prev : curr);
-    // Distância de ida e volta
-    let distTotal = arestaInicial.peso + arestaInicial.peso;
+    let distTotal = arestaInicial.peso;
     let caminho = [arestaInicial.origem, arestaInicial.destino, arestaInicial.origem];
     let adicionados = new Set<Vertice>(caminho);
-    yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
+    let busca = new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
+    busca.detalhes = `Distância parcial: ${distTotal}`;
+    yield busca;
     while (true) {
         let verticeMenorDist: Vertice;
         let menorDist = Infinity;
@@ -560,16 +561,20 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
             v2 = caminho[i + 1];
             let adjacentes = v1.adjacentesComPesos.filter(adj => !adicionados.has(adj.v) && adj.v.adjacentes.find(outro => outro.equals(v2)));
             // Exibe o progresso na tela
-            yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2]);
+            let busca = new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2]);
+            busca.detalhes = `Distância parcial: ${distTotal}`;
+            yield busca;
             // Mede a distância de cada adjacente até o segundo vértice
             for (let adj of adjacentes) {
                 // Encontra a distância até v2 desse vértice
                 let arestaParaV2 = adj.v.adjacentesComPesos.find(outro => outro.v.equals(v2));
                 if (arestaParaV2 != null) {
-                    // Exibe o progresso na tela
-                    yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2], adj.v);
                     // Soma a distância do V1 para o novo vértice para o V2
                     let dist = adj.p + arestaParaV2.p;
+                    // Exibe o progresso na tela
+                    let busca =  new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2], adj.v);
+                    busca.detalhes = `Distância parcial: ${distTotal}; Adicionando ${adj.v.nome}: +${dist}`;
+                    yield busca;
                     if (dist < menorDist && !adicionados.has(adj.v)) {
                         menorDist = dist;
                         verticeMenorDist = adj.v;
@@ -603,7 +608,9 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
                 return new ResultadoBusca(inicial, null, visitados, [], false, [], "Caxeiro Viajante");
             }
             // Exibe o progresso na tela
-            yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", [], [v1, v2], adjacente);
+            let busca = new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", [], [v1, v2], adjacente);
+            busca.detalhes = `Distância parcial: ${distTotal}`;
+            yield busca;
             // Adiciona a aresta
             arestaInfinita = new Arco(v2, adjacente, -1);
             grafo.arcosAdicionais = [arestaInfinita];
@@ -613,15 +620,17 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
         caminho.splice(indiceInsercao, 0, verticeMenorDist);
         adicionados.add(verticeMenorDist);
         // Exibe o progresso na tela
-        yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
+        let busca = new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
+        busca.detalhes = `Distância parcial: ${distTotal}; ${verticeMenorDist.nome} adicionado`;
+        yield busca;
     }
     let visitados = caminho.filter((v, i, arr) => i === arr.indexOf(v));
     // Se o algorítmo terminar sem nenhuma aresta infinita pendente, o ciclo está completo
     if (arestaInfinita == null) {
-        return new ResultadoBusca(inicial, null, visitados, caminho, true, [], "Caxeiro Viajante");
+        return new ResultadoBusca(inicial, null, visitados, caminho, true, [], `Caxeiro Viajante (Distância: ${distTotal})`);
     }
     else {
-        return new ResultadoBusca(inicial, null, visitados, [], false, [], "Caxeiro Viajante");
+        return new ResultadoBusca(inicial, null, visitados, [], false, [], "Caxeiro Viajante (Erro)");
     }
 }
 
