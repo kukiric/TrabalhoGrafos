@@ -561,14 +561,14 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
     yield busca;
     while (true) {
         let verticeMenorDist: Vertice;
+        let menorDistV1: VerticePeso;
         let dist1 = Infinity;
         let dist2 = Infinity;
         let indiceInsercao: number;
-        let v1: VerticePeso, v2: VerticePeso;
         // Tenta a possível inserção de um novo vértice entre cada par único de vértices do ciclo
         for (let i = 0; i < caminho.length - 2; i++) {
-            v1 = caminho[i + 0];
-            v2 = caminho[i + 1];
+            let v1 = caminho[i + 0];
+            let v2 = caminho[i + 1];
             let adjacentes = v1.v.adjacentesComPesos.filter(adj => !adicionados.has(adj.v) && adj.v.adjacentes.find(outro => outro.equals(v2.v)));
             // Exibe o progresso na tela
             let busca = new ResultadoBusca(inicial, null, [], caminhoVertices, true, [], "Caxeiro Viajante", adjacentes.map(a => a.v), [v1.v, v2.v]);
@@ -583,12 +583,13 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
                     let dist = adj.p + arestaParaV2.p;
                     // Exibe o progresso na tela
                     let busca =  new ResultadoBusca(inicial, null, [], caminhoVertices, true, [], "Caxeiro Viajante", adjacentes.map(a => a.v), [v1.v, v2.v], adj.v);
-                    busca.detalhes = `Distância parcial com ${adj.v.nome}: ${distTotal} + ${dist} - ${v1.p} = ${distTotal + dist - v1.p}`;
+                    busca.detalhes = `Distância parcial com ${adj.v.nome}: ${distTotal} + ${adj.p} + ${arestaParaV2.p} - ${v1.p} = ${distTotal + dist - v1.p}`;
                     yield busca;
                     if (dist < dist1 + dist2 && !adicionados.has(adj.v)) {
                         dist1 = adj.p;
                         dist2 = arestaParaV2.p;
                         verticeMenorDist = adj.v;
+                        menorDistV1 = v1;
                         indiceInsercao = i + 1;
                         grafo.arcosAdicionais = new Array();
                         arestaInfinita = null;
@@ -628,13 +629,13 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
             indiceInsercao = caminho.indexOf(v2);
             verticeMenorDist = adjacente;
         }
-        caminho.splice(indiceInsercao, 0, new VerticePeso(verticeMenorDist, dist2));
+        let novoVertice = new VerticePeso(verticeMenorDist, dist2);
+        caminho.splice(indiceInsercao, 0, novoVertice);
         caminhoVertices = caminho.map(a => a.v);
         adicionados.add(verticeMenorDist);
         // Atualiza as distâncias
-        distTotal = distTotal + (dist1 + dist2) - v1.p;
-        v1.p = dist1;
-        v2.p = dist2;
+        distTotal = distTotal + (dist1 + dist2) - menorDistV1.p;
+        menorDistV1.p = dist1;
         // Exibe o progresso na tela
         let busca = new ResultadoBusca(inicial, null, [], caminhoVertices, true, [], "Caxeiro Viajante");
         busca.detalhes = `Distância parcial: ${distTotal}; ${verticeMenorDist.nome} adicionado`;
