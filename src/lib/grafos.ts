@@ -99,6 +99,7 @@ export class Grafo {
     public mapa: boolean;
     public inicial: Vertice;
     public final: Vertice;
+    public arcosAdicionais: Arco[];
 
     public constructor() {
         this.vertices = new Array();
@@ -108,6 +109,7 @@ export class Grafo {
         this.mapa = false;
         this.inicial = null;
         this.final = null;
+        this.arcosAdicionais = new Array();
     }
 
     public getVerticePorID(id: number): Vertice {
@@ -532,23 +534,30 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
     // Heurística: Inserção de Menor Encargo
     type ArcoCiclo = {v: Vertice, p: number};
     let grafo = inicial.grafo;
+    // Não processa o grafo se ele não for conexo
+    if (!grafo.isConexo()) {
+        alert("Caxeiro Viajante impossível: o grafo não é conexo!");
+        return null;
+    }
     let cicloCompleto = new Array<ArcoCiclo>();
+    let arestaInfinita: Arco = null;
     // Primeiro, encontra a menor aresta possível
     // Desta aresta, será construído o primeiro sub-ciclo de ida e volta
-    let arestaInicio = grafo.arcos.reduce((prev, curr) => prev.peso < curr.peso ? prev : curr);
+    let arestaInicial = grafo.arcos.reduce((prev, curr) => prev.peso < curr.peso ? prev : curr);
     // Distância de ida e volta
-    let distTotal = arestaInicio.peso + arestaInicio.peso;
-    let caminho = [arestaInicio.origem, arestaInicio.destino, arestaInicio.origem];
+    let distTotal = arestaInicial.peso + arestaInicial.peso;
+    let caminho = [arestaInicial.origem, arestaInicial.destino, arestaInicial.origem];
     let adicionados = new Set<Vertice>(caminho);
     yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
     while (true) {
         let verticeMenorDist: Vertice;
         let menorDist = Infinity;
         let indiceInsercao: number;
-        // Tenta a possível inserção de um novo vértice entre cada par de vértices do ciclo
-        for (let i = 0; i < caminho.length - 1; i++) {
-            let v1 = caminho[i];
-            let v2 = caminho[i + 1];
+        let v1: Vertice, v2: Vertice;
+        // Tenta a possível inserção de um novo vértice entre cada par único de vértices do ciclo
+        for (let i = 0; i < caminho.length - 2; i++) {
+            v1 = caminho[i];
+            v2 = caminho[i + 1];
             let adjacentes = v1.adjacentesComPesos.filter(adj => !adicionados.has(adj.v) && adj.v.adjacentes.find(outro => outro.equals(v2)));
             // Exibe o progresso na tela
             yield new ResultadoBusca(inicial, null, [], caminho, true, [],
@@ -571,8 +580,24 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
                 }
             }
         }
+        // Se não for encontrada mais nenhuma aresta menor que a atual
         if (verticeMenorDist === undefined) {
-            break;
+            // Termina se o grafo ciclo conter todos os vértices
+            if (grafo.vertices.every(v => adicionados.has(v))) {
+                break;
+            }
+            // Se não, cria uma aresta infinita temporária entre v1 e o primeiro adjacente de v2 que não faz parte do ciclo
+            let adj = v2.adjacentesComPesos.find(outro => !adicionados.has(outro.v));
+            // v2 não tem mais nenhum adjacente válido
+            if (adj === undefined) {
+                alert("Erro no caxeiro viajante: elemento do caminho isolado sem vizinhos!");
+                return null;
+            }
+            arestaInfinita = new Arco(v1, adj.v, -1);
+            grafo.arcosAdicionais = [arestaInfinita];
+            alert("aresta infinita criada entre " + v1.nome + " e " + adj.v.nome);
+            indiceInsercao = caminho.indexOf(v2);
+            verticeMenorDist = adj.v;
         }
         caminho.splice(indiceInsercao, 0, verticeMenorDist);
         adicionados.add(verticeMenorDist);
@@ -580,8 +605,8 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
         yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
     }
     let visitados = caminho.filter((v, i, arr) => i === arr.indexOf(v));
-    // Verifica se o caxeiro viajante conteve todos os vértices do grafo
-    if (grafo.vertices.every(v1 => adicionados.has(v1))) {
+    // Se o algorítmo terminar sem nenhuma aresta infinita pendente, o ciclo está completo
+    if (arestaInfinita == null) {
         return new ResultadoBusca(inicial, null, visitados, caminho, true, [], "Caxeiro Viajante");
     }
     else {

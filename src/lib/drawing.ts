@@ -89,7 +89,7 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
         contexto.font = "12px sans-serif";
         contexto.fillText(vertice.nome, x, y + 4);
     }
-    function drawArco(v1: Vertice, v2: Vertice, peso: number, destacar: boolean) {
+    function drawArco(v1: Vertice, v2: Vertice, peso: number, cor: string) {
         let x1 = centroCanvas.x + v1.posTela.x - centroGrafo.x;
         let y1 = centroCanvas.y + v1.posTela.y - centroGrafo.y;
         let x2 = centroCanvas.x + v2.posTela.x - centroGrafo.x;
@@ -101,15 +101,8 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
         y1 += distancia * Math.sin(angulo);
         x2 -= distancia * Math.cos(angulo);
         y2 -= distancia * Math.sin(angulo);
-        // Pinta as arestas que fazem parte do caminho em destaque
-        if (destacar) {
-            contexto.strokeStyle = "black";
-            contexto.fillStyle = "black";
-        }
-        else {
-            contexto.strokeStyle = "lightgray";
-            contexto.fillStyle = "lightgray";
-        }
+        contexto.strokeStyle = cor;
+        contexto.fillStyle = cor;
         contexto.lineWidth = larguraLinha;
         contexto.beginPath();
         contexto.moveTo(x1, y1);
@@ -131,10 +124,10 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
             let y = centro.y - h / 2 - 4;
             contexto.fillStyle = "white";
             contexto.fillRect(x, y, w, h);
-            contexto.fillStyle = destacar ? "black" : "lightgray";
+            contexto.fillStyle = cor;
             contexto.font = "12px sans-serif";
             contexto.textAlign = "center";
-            contexto.fillText(peso.toString(), centro.x, centro.y);
+            contexto.fillText((peso >= 0) ? peso.toString() : "∞", centro.x, centro.y);
         }
     }
     // Desenha todos os arcos fora do caminho primeiro
@@ -151,13 +144,17 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
                 arcosCaminho.push({v1: v1, v2: v2_peso.v, peso: v2_peso.p});
             }
             else {
-                drawArco(v1, v2_peso.v, v2_peso.p, false);
+                drawArco(v1, v2_peso.v, v2_peso.p, "lightgray");
             }
         });
     });
     // Depois os arcos que fazem parte do caminho por cima
     arcosCaminho.forEach(par => {
-        drawArco(par.v1, par.v2, par.peso, true);
+        drawArco(par.v1, par.v2, par.peso, "black");
+    });
+    // E as arestas adicionais do grafo
+    grafo.arcosAdicionais.forEach(arco => {
+        drawArco(arco.destino, arco.origem, arco.peso, "#5dc7f4");
     });
     // E finalmente os vértices
     grafo.vertices.forEach(vertice => {

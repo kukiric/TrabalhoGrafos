@@ -249,6 +249,7 @@ function chamarBuscaCompleta(verticeInicial: string, algoritmo: FuncaoBusca) {
 
 function buscar(algoritmo: FuncaoBusca, isCaxeiroViajante: boolean = false) {
     if (grafo != null) {
+        grafo.arcosAdicionais = new Array<Arco>();
         let v1 = $("#grafo_v1").val();
         let v2 = $("#grafo_v2").val();
         // Não alterar, o valor do null é representado em string no HTML
