@@ -276,7 +276,7 @@ export class ResultadoBusca {
         public distancias: number[],
         public nome: string,
         public abertos?: Vertice[],
-        public atual?: Vertice,
+        public atuais?: Vertice[],
         public checado?: Vertice,
         public detalhes?: any
     ) {}
@@ -497,7 +497,7 @@ export function *buscaAStar(inicial: Vertice, procurado: Vertice): Iterator<Resu
         if (vertice.equals(procurado)) {
             return new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*");
         }
-        yield new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*", visitadosAbertos, vertice);
+        yield new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*", visitadosAbertos, [vertice]);
         for (let adjacente of vertice.adjacentes) {
             // Não re-visita o mesmo vértice
             if (fechados.has(adjacente)) {
@@ -508,7 +508,7 @@ export function *buscaAStar(inicial: Vertice, procurado: Vertice): Iterator<Resu
             let h = heuristicaDistancia(adjacente, procurado);
             // Pinta o progresso atual na tela
             visitadosAbertos = Array.from(abertos);
-            yield new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*", visitadosAbertos, vertice, adjacente, {G: g, H: h, F: g + h});
+            yield new ResultadoBusca(inicial, procurado, visitados, caminho, true, distancias, "A*", visitadosAbertos, [vertice], adjacente, {G: g, H: h, F: g + h});
             // Adiciona esse vértice como um caminho provável
             if (!abertos.has(adjacente)) {
                 abertos.add(adjacente);
@@ -540,34 +540,44 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
     let distTotal = arestaInicio.peso + arestaInicio.peso;
     let caminho = [arestaInicio.origem, arestaInicio.destino, arestaInicio.origem];
     let adicionados = new Set<Vertice>(caminho);
+    yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
     while (true) {
         let verticeMenorDist: Vertice;
         let menorDist = Infinity;
         let indiceInsercao: number;
-        // Tenta cada vizinho do primeiro vértice
-        caminho.forEach((v1, i) => {
+        // Tenta a possível inserção de um novo vértice entre cada par de vértices do ciclo
+        for (let i = 0; i < caminho.length - 1; i++) {
+            let v1 = caminho[i];
             let v2 = caminho[i + 1];
-            let adjacentes = v1.adjacentesComPesos;
+            let adjacentes = v1.adjacentesComPesos.filter(adj => !adicionados.has(adj.v) && adj.v.adjacentes.find(outro => outro.equals(v2)));
+            // Exibe o progresso na tela
+            yield new ResultadoBusca(inicial, null, [], caminho, true, [],
+                                     "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2]);
             // Mede a distância de cada adjacente até o segundo vértice
-            adjacentes.forEach(adj => {
+            for (let adj of adjacentes) {
                 // Encontra a distância até v2 desse vértice
                 let arestaParaV2 = adj.v.adjacentesComPesos.find(outro => outro.v.equals(v2));
                 if (arestaParaV2 != null) {
-                    // Soma a distância de ida e volta
+                    // Exibe o progresso na tela
+                    yield new ResultadoBusca(inicial, null, [], caminho, true, [],
+                                     "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2], adj.v);
+                    // Soma a distância do V1 para o novo vértice para o V2
                     let dist = adj.p + arestaParaV2.p;
                     if (dist < menorDist && !adicionados.has(adj.v)) {
                         menorDist = dist;
                         verticeMenorDist = adj.v;
                         indiceInsercao = i + 1;
-                        adicionados.add(adj.v);
                     }
                 }
-            });
-        });
+            }
+        }
         if (verticeMenorDist === undefined) {
             break;
         }
         caminho.splice(indiceInsercao, 0, verticeMenorDist);
+        adicionados.add(verticeMenorDist);
+        // Exibe o progresso na tela
+        yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante");
     }
     let visitados = caminho.filter((v, i, arr) => i === arr.indexOf(v));
     return new ResultadoBusca(inicial, null, visitados, caminho, true, [], "Caxeiro Viajante");
