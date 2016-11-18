@@ -192,7 +192,9 @@ function buscaNext() {
         $("#botao_next").prop("disabled", true);
         $("#botao_skip").prop("disabled", true);
         $("#busca_detalhes").text("Busca finalizada");
+        grafo.arcosAdicionais = new Array();
         buscaTerminada = true;
+        desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
         atualizarModalBusca();
         return true;
     }
@@ -272,6 +274,10 @@ function limparBusca() {
     frameBusca = null;
     distancias = null;
     buscaCompleta = false;
+    if (grafo != null) {
+        grafo.arcosAdicionais = new Array();
+    }
+    $("#botao_next, #botao_skip").prop("disabled", true);
     $("#botao_limpar").addClass("disabled").removeClass("waves-effect");
     $("#botao_info").addClass("disabled").removeClass("waves-effect");
     $("#busca_detalhes").text("");
