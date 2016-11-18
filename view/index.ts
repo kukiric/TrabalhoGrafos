@@ -162,7 +162,7 @@ function buscaNext() {
     if (iteracao.value != null) {
         frameBusca = iteracao.value;
         desenhaGrafo(contexto, grafo, frameBusca, buscaCompleta, cores);
-        if (frameBusca.checado && frameBusca.detalhes) {
+        if (frameBusca.detalhes != null) {
             if (typeof (frameBusca.detalhes) === "string") {
                 $("#busca_detalhes").text(frameBusca.detalhes);
             }
