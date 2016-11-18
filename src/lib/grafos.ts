@@ -556,26 +556,26 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
         let v1: Vertice, v2: Vertice;
         // Tenta a possível inserção de um novo vértice entre cada par único de vértices do ciclo
         for (let i = 0; i < caminho.length - 2; i++) {
-            v1 = caminho[i];
+            v1 = caminho[i + 0];
             v2 = caminho[i + 1];
             let adjacentes = v1.adjacentesComPesos.filter(adj => !adicionados.has(adj.v) && adj.v.adjacentes.find(outro => outro.equals(v2)));
             // Exibe o progresso na tela
-            yield new ResultadoBusca(inicial, null, [], caminho, true, [],
-                                     "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2]);
+            yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2]);
             // Mede a distância de cada adjacente até o segundo vértice
             for (let adj of adjacentes) {
                 // Encontra a distância até v2 desse vértice
                 let arestaParaV2 = adj.v.adjacentesComPesos.find(outro => outro.v.equals(v2));
                 if (arestaParaV2 != null) {
                     // Exibe o progresso na tela
-                    yield new ResultadoBusca(inicial, null, [], caminho, true, [],
-                                     "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2], adj.v);
+                    yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", adjacentes.map(a => a.v), [v1, v2], adj.v);
                     // Soma a distância do V1 para o novo vértice para o V2
                     let dist = adj.p + arestaParaV2.p;
                     if (dist < menorDist && !adicionados.has(adj.v)) {
                         menorDist = dist;
                         verticeMenorDist = adj.v;
                         indiceInsercao = i + 1;
+                        grafo.arcosAdicionais = new Array();
+                        arestaInfinita = null;
                     }
                 }
             }
@@ -586,18 +586,29 @@ export function *buscaPCV(inicial: Vertice): Iterator<ResultadoBusca> {
             if (grafo.vertices.every(v => adicionados.has(v))) {
                 break;
             }
-            // Se não, cria uma aresta infinita temporária entre v1 e o primeiro adjacente de v2 que não faz parte do ciclo
-            let adj = v2.adjacentesComPesos.find(outro => !adicionados.has(outro.v));
-            // v2 não tem mais nenhum adjacente válido
-            if (adj === undefined) {
-                alert("Erro no caxeiro viajante: elemento do caminho isolado sem vizinhos!");
-                return null;
+            // Se não, cria uma aresta infinita temporária entre um vértice e o seu primeiro adjacente que não faz parte do ciclo
+            let v1: Vertice, v2: Vertice;
+            let adjacente: Vertice = null;
+            for (let i = 0; i < caminho.length - 2; i++) {
+                v1 = caminho[i + 0];
+                v2 = caminho[i + 1];
+                adjacente = v1.adjacentes.find(outro => !adicionados.has(outro));
+                if (adjacente != null) {
+                    break;
+                }
             }
-            arestaInfinita = new Arco(v1, adj.v, -1);
+            // Nenhum vértice tem mais algum adjacente válido
+            if (adjacente == null) {
+                let visitados = caminho.filter((v, i, arr) => i === arr.indexOf(v));
+                return new ResultadoBusca(inicial, null, visitados, [], false, [], "Caxeiro Viajante");
+            }
+            // Exibe o progresso na tela
+            yield new ResultadoBusca(inicial, null, [], caminho, true, [], "Caxeiro Viajante", [], [v1, v2], adjacente);
+            // Adiciona a aresta
+            arestaInfinita = new Arco(v2, adjacente, -1);
             grafo.arcosAdicionais = [arestaInfinita];
-            alert("aresta infinita criada entre " + v1.nome + " e " + adj.v.nome);
             indiceInsercao = caminho.indexOf(v2);
-            verticeMenorDist = adj.v;
+            verticeMenorDist = adjacente;
         }
         caminho.splice(indiceInsercao, 0, verticeMenorDist);
         adicionados.add(verticeMenorDist);

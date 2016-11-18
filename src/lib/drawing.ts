@@ -154,7 +154,7 @@ export function desenhaGrafo(contexto: CanvasRenderingContext2D, grafo: Grafo, b
     });
     // E as arestas adicionais do grafo
     grafo.arcosAdicionais.forEach(arco => {
-        drawArco(arco.destino, arco.origem, arco.peso, "#5dc7f4");
+        drawArco(arco.destino, arco.origem, arco.peso, "#ff6e38");
     });
     // E finalmente os vértices
     grafo.vertices.forEach(vertice => {
